@@ -2,24 +2,34 @@ package main
 
 import (
 	"fmt"
-	"job-scraper/internal/models"
-	"job-scraper/internal/scraper"
+	"job-scraper/internal/data"
+	"job-scraper/internal/data/models"
+	"job-scraper/internal/services/scraper"
 	"log"
+	"time"
+
+	"github.com/joho/godotenv"
 )
 
 func main() {
-	positions, err := scraper.ScrapeLinkedInJobs("Golang Developer")
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatalf("could not load .env file: %v", err)
+	}
+
+	db, err := data.Init()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	for _, v := range positions {
-		printPosition(v)
+	s := scraper.NewScraper(db)
+	_, err = s.ScrapeLinkedInJobs("Golang", 1*time.Hour)
+	if err != nil {
+		log.Fatal(err)
 	}
-
 }
 
-func printPosition(job models.JobPosition) {
+func printPosition(job models.Job) {
 	fmt.Printf("%s at '%s' \n\nUrl: %s\nLocation: %s\nPosted: %s\nApplicants: %s\n\n",
-		job.Title, job.CompanyName, job.PageUrl, job.LocationName, job.TimeAgo, job.NumApplicants)
+		job.Title, job.Company, job.Url, job.Location, job.TimeAgo, job.NumApplicants)
 }

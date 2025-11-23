@@ -1,0 +1,123 @@
+package scraper
+
+import (
+	"fmt"
+	"job-scraper/internal/data"
+	"job-scraper/internal/data/models"
+	"job-scraper/internal/data/repositories"
+	"job-scraper/internal/services/fetcher"
+	"job-scraper/internal/services/parser"
+	"log"
+	"net/url"
+	"strconv"
+	"strings"
+	"time"
+)
+
+const linkedInBaseUrl string = "https://www.linkedin.com/jobs-guest/jobs/api"
+
+type Scraper struct {
+	db *data.DB
+}
+
+func NewScraper(db *data.DB) *Scraper {
+	return &Scraper{
+		db: db,
+	}
+}
+
+func (s *Scraper) ScrapeLinkedInJobs(jobTitle string, timeWindow time.Duration) ([]models.Job, error) {
+	jobTitle = strings.TrimSpace(jobTitle)
+
+	//todo: add time window filter 
+	jobIds, err := getJobsFromSearch(jobTitle, timeWindow)
+	if err != nil {
+		return nil, err
+	}
+
+	jRepo := repositories.NewJobsRepo(s.db)
+	res := make([]models.Job, 0, len(jobIds))
+	for _, jobId := range jobIds {
+		dbJob, err := jRepo.GetByID(jobId)
+		if err != nil {
+			log.Printf("could not get job with id '%s' from database: %v\n", jobId, err)
+			continue
+		}
+		if dbJob != nil {
+			res = append(res, *dbJob)
+			continue
+		}
+
+		jobPageUrl := fmt.Sprintf("%s/jobPosting/%s", linkedInBaseUrl, jobId)
+		jobPostingContent, err := fetcher.Fetch(jobPageUrl)
+
+		if err != nil {
+			log.Printf("could not get job with id '%s' from '%s': %v\n", jobId, jobPageUrl, err)
+			continue
+		}
+
+		job, err := parser.ParseJob(jobPostingContent, jobId)
+		if err != nil {
+			log.Printf("could not parse job with id '%s': %v\n", jobId, err)
+			continue
+		}
+		err = jRepo.Add(&job)
+		if err != nil {
+			log.Printf("could not save job with id '%s' from '%s' to database: %v\n", jobId, jobPageUrl, err)
+			continue
+		}
+
+		res = append(res, job)
+	}
+
+	return res, nil
+}
+
+func getJobsFromSearch(keywords string, timeWindow time.Duration) ([]string, error) {
+	var ids []string
+
+	page := 1
+	for {
+		params := buildSearchQueryParams(keywords, page, timeWindow)
+		searchUrl := fmt.Sprintf("%s/seeMoreJobPostings/search?%s", linkedInBaseUrl, params)
+		fmt.Println(searchUrl)
+
+		searchContent, err := fetcher.Fetch(searchUrl)
+		if err != nil {
+			return nil, err
+		}
+		jobIds, err := parser.ParseIdsFromSearch(searchContent)
+		if err != nil {
+			return nil, err
+		}
+		if len(jobIds) == 0 {
+			break
+		}
+
+		ids = append(ids, jobIds...)
+
+		fmt.Println(page)
+		page++
+	}
+
+	return ids, nil
+}
+
+func buildSearchQueryParams(keywords string, page int, timeWindow time.Duration) string {
+	if timeWindow == 0 {
+		timeWindow = 24 * time.Hour
+	}
+
+	queryParams := url.Values{
+		"keywords": {keywords},
+		//todo: hardcoded, can change to a country later
+		"location": {"Worldwide"},
+		//get jobs posts for the last N seconds
+		"f_TPR": {fmt.Sprintf("r%.0f", timeWindow.Seconds())},
+		//remote work
+		"f_WT":  {"2"},
+		"start": {strconv.Itoa((page - 1) * 25)},
+	}
+
+	return queryParams.Encode()
+}

@@ -2,7 +2,7 @@ package parser
 
 import (
 	"bytes"
-	"job-scraper/internal/models"
+	"job-scraper/internal/data/models"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
@@ -30,22 +30,22 @@ func ParseIdsFromSearch(body []byte) ([]string, error) {
 	return res, nil
 }
 
-func ParseJob(body []byte, id string) (models.JobPosition, error) {
+func ParseJob(body []byte, id string) (models.Job, error) {
 	doc, err := goquery.NewDocumentFromReader(bytes.NewReader(body))
 	if err != nil {
-		return models.JobPosition{}, err
+		return models.Job{}, err
 	}
 
-	job := models.JobPosition{}
+	job := models.Job{}
 
-	job.ID = id
+	job.Id = id
 	job.Title = findAndTrimText(doc, ".top-card-layout__title")
 	job.TimeAgo = findAndTrimText(doc, ".posted-time-ago__text")
-	job.CompanyName = findAndTrimText(doc, ".topcard__org-name-link")
-	job.LocationName = findAndTrimText(doc, ".topcard__flavor.topcard__flavor--bullet")
+	job.Company = findAndTrimText(doc, ".topcard__org-name-link")
+	job.Location = findAndTrimText(doc, ".topcard__flavor.topcard__flavor--bullet")
 	job.Description = findAndTrimHtml(doc, ".show-more-less-html__markup")
 	applicantsText := findAndTrimText(doc, ".num-applicants__caption")
-	job.PageUrl, _ = doc.Find(".topcard__link").Attr("href")
+	job.Url, _ = doc.Find(".topcard__link").Attr("href")
 
 	job.NumApplicants = getApplicants(applicantsText)
 
