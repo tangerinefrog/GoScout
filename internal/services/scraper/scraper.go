@@ -7,6 +7,7 @@ import (
 	"job-scraper/internal/data/repositories"
 	"job-scraper/internal/services/fetcher"
 	"job-scraper/internal/services/parser"
+	"job-scraper/internal/services/validator"
 	"log"
 	"net/url"
 	"strconv"
@@ -26,14 +27,17 @@ func NewScraper(db *data.DB) *Scraper {
 	}
 }
 
-func (s *Scraper) ScrapeLinkedInJobs(jobTitle string, timeWindow time.Duration) ([]models.Job, error) {
-	jobTitle = strings.TrimSpace(jobTitle)
+func (s *Scraper) ScrapeLinkedInJobs(keyword string, timeWindow time.Duration) ([]models.Job, error) {
+	keyword = strings.TrimSpace(keyword)
 
-	jobIds, err := getJobsFromSearch(jobTitle, timeWindow)
+	jobIds, err := getJobsFromSearch(keyword, timeWindow)
 	if err != nil {
 		return nil, err
 	}
 
+	keywordParts := strings.Split(keyword, " ")
+
+	validator := validator.NewKeywordValidator()
 	jRepo := repositories.NewJobsRepo(s.db)
 	res := make([]models.Job, 0, len(jobIds))
 	for _, jobId := range jobIds {
@@ -60,6 +64,13 @@ func (s *Scraper) ScrapeLinkedInJobs(jobTitle string, timeWindow time.Duration) 
 			log.Printf("could not parse job with id '%s': %v\n", jobId, err)
 			continue
 		}
+		job.Status = models.JobStatusCreated
+
+		valid := validator.ValidateKeywords(keywordParts, job.Description+job.Title)
+		if !valid {
+			job.Status = models.JobStatusIgnored
+		}
+
 		err = jRepo.Add(&job)
 		if err != nil {
 			log.Printf("could not save job with id '%s' from '%s' to database: %v\n", jobId, jobPageUrl, err)
