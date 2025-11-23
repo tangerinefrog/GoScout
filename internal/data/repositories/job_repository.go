@@ -26,10 +26,10 @@ func (repo *jobsRepo) Add(job *models.Job) error {
 			title,
 			url,
 			description,
-			timeAgo,
+			date_posted,
 			company,
 			location,
-			numApplicants,
+			num_applicants,
 			status
 		)
 		VALUES
@@ -43,7 +43,7 @@ func (repo *jobsRepo) Add(job *models.Job) error {
 		job.Title,
 		job.Url,
 		job.Description,
-		job.TimeAgo,
+		job.DatePosted,
 		job.Company,
 		job.Location,
 		job.NumApplicants,
@@ -64,10 +64,10 @@ func (repo *jobsRepo) GetByID(id string) (*models.Job, error) {
 			title,
 			url,
 			description,
-			timeAgo,
+			date_posted,
 			company,
 			location,
-			numApplicants,
+			num_applicants,
 			status
 		FROM jobs
 		WHERE id = ?
@@ -94,7 +94,7 @@ func (repo *jobsRepo) GetByID(id string) (*models.Job, error) {
 		&job.Title,
 		&job.Url,
 		&job.Description,
-		&job.TimeAgo,
+		&job.DatePosted,
 		&job.Company,
 		&job.Location,
 		&job.NumApplicants,
@@ -114,10 +114,10 @@ func (repo *jobsRepo) List() ([]models.Job, error) {
 			title,
 			url,
 			description,
-			timeAgo,
+			date_posted,
 			company,
 			location,
-			numApplicants,
+			num_applicants,
 			status
 		FROM jobs
 	`
@@ -140,7 +140,7 @@ func (repo *jobsRepo) List() ([]models.Job, error) {
 			&job.Title,
 			&job.Url,
 			&job.Description,
-			&job.TimeAgo,
+			&job.DatePosted,
 			&job.Company,
 			&job.Location,
 			&job.NumApplicants,

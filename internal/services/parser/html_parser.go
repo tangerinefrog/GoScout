@@ -2,8 +2,12 @@ package parser
 
 import (
 	"bytes"
+	"errors"
+	"fmt"
 	"job-scraper/internal/data/models"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/PuerkitoBio/goquery"
 )
@@ -40,13 +44,18 @@ func ParseJob(body []byte, id string) (models.Job, error) {
 
 	job.Id = id
 	job.Title = findAndTrimText(doc, ".top-card-layout__title")
-	job.TimeAgo = findAndTrimText(doc, ".posted-time-ago__text")
 	job.Company = findAndTrimText(doc, ".topcard__org-name-link")
 	job.Location = findAndTrimText(doc, ".topcard__flavor.topcard__flavor--bullet")
 	job.Description = findAndTrimHtml(doc, ".show-more-less-html__markup")
-	applicantsText := findAndTrimText(doc, ".num-applicants__caption")
 	job.Url, _ = doc.Find(".topcard__link").Attr("href")
+	
+	timeAgo := findAndTrimText(doc, ".posted-time-ago__text")
+	date, err := extractDate(timeAgo)
+	if err == nil {
+		job.DatePosted = date
+	}
 
+	applicantsText := findAndTrimText(doc, ".num-applicants__caption")
 	job.NumApplicants = getApplicants(applicantsText)
 
 	return job, nil
@@ -72,4 +81,38 @@ func getApplicants(s string) string {
 	}
 
 	return ""
+}
+
+func extractDate(timeAgo string) (time.Time, error) {
+	timeAgo = strings.TrimSpace(timeAgo)
+	if timeAgo == "" {
+		return time.Time{}, errors.New("could not extract date from an empty string")
+	}
+
+	parts := strings.Split(timeAgo, " ")
+	if len(parts) < 2 {
+		return time.Time{}, fmt.Errorf("could not parse date from '%s'", timeAgo)
+	}
+
+	num, err := strconv.Atoi(parts[0])
+	if len(parts) < 2 || err != nil {
+		return time.Time{}, fmt.Errorf("could not parse date from '%s'", timeAgo)
+	}
+
+	name := strings.TrimRight(parts[1], "s")
+	durations := map[string]time.Duration{
+		"minute": time.Minute,
+		"hour":   time.Hour,
+		"day":    time.Hour * 24,
+		"week":   time.Hour * 24 * 7,
+		"month":  time.Hour * 24 * 30,
+	}
+
+	if dur, ok := durations[name]; ok {
+		date := time.Now().Add(-1 * time.Duration(num) * dur)
+		return date, nil
+	}
+
+	return time.Time{}, fmt.Errorf("could not parse date from '%s'; unknown duration '%s'", timeAgo, name)
+
 }

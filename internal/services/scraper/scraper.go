@@ -29,7 +29,6 @@ func NewScraper(db *data.DB) *Scraper {
 func (s *Scraper) ScrapeLinkedInJobs(jobTitle string, timeWindow time.Duration) ([]models.Job, error) {
 	jobTitle = strings.TrimSpace(jobTitle)
 
-	//todo: add time window filter
 	jobIds, err := getJobsFromSearch(jobTitle, timeWindow)
 	if err != nil {
 		return nil, err
@@ -47,7 +46,6 @@ func (s *Scraper) ScrapeLinkedInJobs(jobTitle string, timeWindow time.Duration) 
 			res = append(res, *dbJob)
 			continue
 		}
-		fmt.Println(jobId)
 
 		jobPageUrl := fmt.Sprintf("%s/jobPosting/%s", linkedInBaseUrl, jobId)
 		jobPostingContent, err := fetcher.Fetch(jobPageUrl)
