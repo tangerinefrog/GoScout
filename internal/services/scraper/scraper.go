@@ -29,7 +29,7 @@ func NewScraper(db *data.DB) *Scraper {
 func (s *Scraper) ScrapeLinkedInJobs(jobTitle string, timeWindow time.Duration) ([]models.Job, error) {
 	jobTitle = strings.TrimSpace(jobTitle)
 
-	//todo: add time window filter 
+	//todo: add time window filter
 	jobIds, err := getJobsFromSearch(jobTitle, timeWindow)
 	if err != nil {
 		return nil, err
@@ -47,6 +47,7 @@ func (s *Scraper) ScrapeLinkedInJobs(jobTitle string, timeWindow time.Duration) 
 			res = append(res, *dbJob)
 			continue
 		}
+		fmt.Println(jobId)
 
 		jobPageUrl := fmt.Sprintf("%s/jobPosting/%s", linkedInBaseUrl, jobId)
 		jobPostingContent, err := fetcher.Fetch(jobPageUrl)
@@ -80,7 +81,6 @@ func getJobsFromSearch(keywords string, timeWindow time.Duration) ([]string, err
 	for {
 		params := buildSearchQueryParams(keywords, page, timeWindow)
 		searchUrl := fmt.Sprintf("%s/seeMoreJobPostings/search?%s", linkedInBaseUrl, params)
-		fmt.Println(searchUrl)
 
 		searchContent, err := fetcher.Fetch(searchUrl)
 		if err != nil {
@@ -96,7 +96,6 @@ func getJobsFromSearch(keywords string, timeWindow time.Duration) ([]string, err
 
 		ids = append(ids, jobIds...)
 
-		fmt.Println(page)
 		page++
 	}
 

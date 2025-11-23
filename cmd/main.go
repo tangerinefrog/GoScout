@@ -1,9 +1,7 @@
 package main
 
 import (
-	"fmt"
 	"job-scraper/internal/data"
-	"job-scraper/internal/data/models"
 	"job-scraper/internal/services/scraper"
 	"log"
 	"time"
@@ -27,9 +25,4 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-}
-
-func printPosition(job models.Job) {
-	fmt.Printf("%s at '%s' \n\nUrl: %s\nLocation: %s\nPosted: %s\nApplicants: %s\n\n",
-		job.Title, job.Company, job.Url, job.Location, job.TimeAgo, job.NumApplicants)
 }
