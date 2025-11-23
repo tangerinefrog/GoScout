@@ -30,7 +30,7 @@ func ParseIdsFromSearch(body []byte) ([]string, error) {
 	return res, nil
 }
 
-func ParseJob(body []byte) (models.JobPosition, error) {
+func ParseJob(body []byte, id string) (models.JobPosition, error) {
 	doc, err := goquery.NewDocumentFromReader(bytes.NewReader(body))
 	if err != nil {
 		return models.JobPosition{}, err
@@ -38,6 +38,7 @@ func ParseJob(body []byte) (models.JobPosition, error) {
 
 	job := models.JobPosition{}
 
+	job.ID = id
 	job.Title = findAndTrimText(doc, ".top-card-layout__title")
 	job.TimeAgo = findAndTrimText(doc, ".posted-time-ago__text")
 	job.CompanyName = findAndTrimText(doc, ".topcard__org-name-link")

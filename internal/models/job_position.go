@@ -1,6 +1,7 @@
 package models
 
 type JobPosition struct {
+	ID            string
 	Title         string
 	PageUrl       string
 	Description   string

@@ -39,11 +39,11 @@ func ScrapeLinkedInJobs(jobTitle string) ([]models.JobPosition, error) {
 		jobPostingContent, err := fetcher.Fetch(jobPageUrl)
 
 		if err != nil {
-			log.Printf("could not get job posting with id '%s': %v\n", jobId, err)
+			log.Printf("could not get job posting with id '%s' from '%s': %v\n", jobId, jobPageUrl, err)
 			continue
 		}
 
-		job, err := parser.ParseJob(jobPostingContent)
+		job, err := parser.ParseJob(jobPostingContent, jobId)
 		if err != nil {
 			log.Printf("could not parse job posting with id '%s': %v\n", jobId, err)
 			continue
