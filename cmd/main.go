@@ -2,10 +2,10 @@ package main
 
 import (
 	"job-scraper/internal/data"
-	"job-scraper/internal/services/scraper"
+	"job-scraper/internal/handlers"
 	"log"
-	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
 
@@ -20,9 +20,12 @@ func main() {
 		log.Fatal(err)
 	}
 
-	s := scraper.NewScraper(db)
-	_, err = s.ScrapeLinkedInJobs("Golang", 7*24*time.Hour)
-	if err != nil {
-		log.Fatal(err)
-	}
+	r := gin.Default()
+	h := handlers.NewHandler(db)
+	h.SetupRoutes(r)
+
+	port := "8080"
+	log.Printf("Server is starting on port :%s...\n", port)
+	err = r.Run(":" + port)
+	log.Printf("Server error: %v\n", err)
 }

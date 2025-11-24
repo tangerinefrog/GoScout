@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"job-scraper/internal/data"
 	"job-scraper/internal/data/models"
+	"job-scraper/internal/data/sqltypes"
 )
 
 type jobsRepo struct {
@@ -43,7 +44,7 @@ func (repo *jobsRepo) Add(job *models.Job) error {
 		job.Title,
 		job.Url,
 		job.Description,
-		job.DatePosted,
+		sqltypes.TimeToSqlFormat(job.DatePosted),
 		job.Company,
 		job.Location,
 		job.NumApplicants,
@@ -89,12 +90,13 @@ func (repo *jobsRepo) GetByID(id string) (*models.Job, error) {
 		return nil, nil
 	}
 	var job models.Job
+	var datePostedString string
 	err = rows.Scan(
 		&job.Id,
 		&job.Title,
 		&job.Url,
 		&job.Description,
-		&job.DatePosted,
+		&datePostedString,
 		&job.Company,
 		&job.Location,
 		&job.NumApplicants,
@@ -103,6 +105,8 @@ func (repo *jobsRepo) GetByID(id string) (*models.Job, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to scan job row: %w", err)
 	}
+
+	job.DatePosted = sqltypes.ParseTimeFromSql(datePostedString)
 
 	return &job, nil
 }
@@ -135,12 +139,14 @@ func (repo *jobsRepo) List() ([]models.Job, error) {
 
 	for rows.Next() {
 		var job models.Job
+		var datePostedString string
+
 		err := rows.Scan(
 			&job.Id,
 			&job.Title,
 			&job.Url,
 			&job.Description,
-			&job.DatePosted,
+			&datePostedString,
 			&job.Company,
 			&job.Location,
 			&job.NumApplicants,
@@ -149,6 +155,7 @@ func (repo *jobsRepo) List() ([]models.Job, error) {
 		if err != nil {
 			return jobs, fmt.Errorf("failed to scan job row: %w", err)
 		}
+		job.DatePosted = sqltypes.ParseTimeFromSql(datePostedString)
 
 		jobs = append(jobs, job)
 	}
