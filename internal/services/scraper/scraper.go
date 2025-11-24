@@ -1,6 +1,7 @@
 package scraper
 
 import (
+	"errors"
 	"fmt"
 	"job-scraper/internal/data"
 	"job-scraper/internal/data/models"
@@ -52,7 +53,7 @@ func (s *Scraper) ScrapeLinkedInJobs(keyword string, timeWindow time.Duration) (
 		}
 
 		jobPageUrl := fmt.Sprintf("%s/jobPosting/%s", linkedInBaseUrl, jobId)
-		jobPostingContent, err := fetcher.Fetch(jobPageUrl)
+		jobPostingContent, err := fetcher.FetchWithRetry(jobPageUrl, 5)
 
 		if err != nil {
 			log.Printf("could not get job with id '%s' from '%s': %v\n", jobId, jobPageUrl, err)
@@ -93,7 +94,9 @@ func getJobsFromSearch(keywords string, timeWindow time.Duration) ([]string, err
 
 		searchContent, err := fetcher.Fetch(searchUrl)
 		if err != nil {
-			return nil, err
+			if !errors.Is(err, fetcher.ErrorUnsuccessfulStatusCode) {
+				return nil, err
+			}
 		}
 		jobIds, err := parser.ParseIdsFromSearch(searchContent)
 		if err != nil {

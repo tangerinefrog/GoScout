@@ -2,9 +2,15 @@ package fetcher
 
 import (
 	"context"
+	"errors"
 	"io"
+	"log"
+	"math"
 	"net/http"
+	"time"
 )
+
+var ErrorUnsuccessfulStatusCode error = errors.New("unsuccessful status code")
 
 func Fetch(url string) (body []byte, err error) {
 	client := http.Client{}
@@ -21,6 +27,10 @@ func Fetch(url string) (body []byte, err error) {
 		return nil, err
 	}
 
+	if resp.StatusCode < 200 || resp.StatusCode > 299 {
+		return nil, ErrorUnsuccessfulStatusCode
+	}
+
 	defer resp.Body.Close()
 
 	body, err = io.ReadAll(resp.Body)
@@ -29,6 +39,26 @@ func Fetch(url string) (body []byte, err error) {
 	}
 
 	return body, nil
+}
+
+func FetchWithRetry(url string, retryCount int) (body []byte, err error) {
+	for i := range retryCount {
+		//delay formula: 2^i seconds
+		delay := time.Duration(math.Pow(2, float64(i))) * time.Second
+
+		body, err = Fetch(url)
+		if err != nil {
+			if errors.Is(err, ErrorUnsuccessfulStatusCode) {
+				log.Printf("got unsuccessful status code from '%s'", url)
+				time.Sleep(delay)
+				continue
+			}
+			return
+		}
+		return
+	}
+
+	return
 }
 
 func configureMockHeaders(req *http.Request) {

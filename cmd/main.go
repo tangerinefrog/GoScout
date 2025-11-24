@@ -21,7 +21,7 @@ func main() {
 	}
 
 	s := scraper.NewScraper(db)
-	_, err = s.ScrapeLinkedInJobs("Golang", 1*time.Hour)
+	_, err = s.ScrapeLinkedInJobs("Golang", 7*24*time.Hour)
 	if err != nil {
 		log.Fatal(err)
 	}
