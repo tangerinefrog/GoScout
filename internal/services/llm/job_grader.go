@@ -19,6 +19,6 @@ func NewJobGrader(db *data.DB) *jobGrader {
 	}
 }
 
-// func (jg *jobGrader) Grade(jobDescr string) (GradeResult, error) {
-
-// }
+func (jg *jobGrader) Grade(jobDescr string) (GradeResult, error) {
+	return GradeResult{}, nil
+}

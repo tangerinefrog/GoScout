@@ -36,7 +36,7 @@ func (repo *jobsRepo) Add(job *models.Job) error {
 		VALUES
 		(
 			?, ?, ?, ?, ?, ?, ?, ?, ?
-		)
+		);
 	`
 
 	_, err := repo.db.ExecContext(context.TODO(), query,
@@ -58,6 +58,26 @@ func (repo *jobsRepo) Add(job *models.Job) error {
 	return nil
 }
 
+func (repo *jobsRepo) UpdateStatus(id string, status models.JobStatus) error {
+	query := `
+		UPDATE jobs
+		SET 
+			status = ?
+		WHERE id = ?
+	`
+
+	_, err := repo.db.ExecContext(context.TODO(), query,
+		status,
+		id,
+	)
+
+	if err != nil {
+		return fmt.Errorf("job update failed: %w", err)
+	}
+
+	return nil
+}
+
 func (repo *jobsRepo) GetByID(id string) (*models.Job, error) {
 	query := `
 		SELECT
@@ -71,7 +91,7 @@ func (repo *jobsRepo) GetByID(id string) (*models.Job, error) {
 			num_applicants,
 			status
 		FROM jobs
-		WHERE id = ?
+		WHERE id = ?;
 	`
 
 	rows, err := repo.db.QueryContext(context.TODO(), query, id)
@@ -123,7 +143,7 @@ func (repo *jobsRepo) List() ([]models.Job, error) {
 			location,
 			num_applicants,
 			status
-		FROM jobs
+		FROM jobs;
 	`
 
 	rows, err := repo.db.QueryContext(context.TODO(), query)
@@ -132,6 +152,59 @@ func (repo *jobsRepo) List() ([]models.Job, error) {
 			return nil, nil
 		}
 		return nil, fmt.Errorf("jobs list query failed: %w", err)
+	}
+
+	defer rows.Close()
+	var jobs []models.Job
+
+	for rows.Next() {
+		var job models.Job
+		var datePostedString string
+
+		err := rows.Scan(
+			&job.Id,
+			&job.Title,
+			&job.Url,
+			&job.Description,
+			&datePostedString,
+			&job.Company,
+			&job.Location,
+			&job.NumApplicants,
+			&job.Status,
+		)
+		if err != nil {
+			return jobs, fmt.Errorf("failed to scan job row: %w", err)
+		}
+		job.DatePosted = sqltypes.ParseTimeFromSql(datePostedString)
+
+		jobs = append(jobs, job)
+	}
+
+	return jobs, nil
+}
+
+func (repo *jobsRepo) ListByStatus(status models.JobStatus) ([]models.Job, error) {
+	query := `
+		SELECT
+			id,
+			title,
+			url,
+			description,
+			date_posted,
+			company,
+			location,
+			num_applicants,
+			status
+		FROM jobs
+		WHERE status = ?;
+	`
+
+	rows, err := repo.db.QueryContext(context.TODO(), query, status)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("jobs list by status query failed: %w", err)
 	}
 
 	defer rows.Close()

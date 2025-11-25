@@ -2,12 +2,12 @@ package models
 
 import "time"
 
-type jobStatus string
+type JobStatus string
 
-const JobStatusCreated jobStatus = "created"
-const JobStatusPending jobStatus = "pending"
-const JobStatusIgnored jobStatus = "ignored"
-const JobStatusApplied jobStatus = "applied"
+const JobStatusCreated JobStatus = "created"
+const JobStatusPending JobStatus = "pending"
+const JobStatusIgnored JobStatus = "ignored"
+const JobStatusApplied JobStatus = "applied"
 
 type Job struct {
 	Id            string
@@ -18,5 +18,5 @@ type Job struct {
 	Company       string
 	Location      string
 	NumApplicants string
-	Status        jobStatus
+	Status        JobStatus
 }
