@@ -13,7 +13,7 @@ type ScrapeRequest struct {
 	PeriodDays int    `json:"period_days"`
 }
 
-func (h *Handler) scrapeHandler(c *gin.Context) {
+func (h *handler) scrapeHandler(c *gin.Context) {
 	var req ScrapeRequest
 	if err := c.BindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

@@ -21,7 +21,7 @@ type JobResponse struct {
 	Status        string    `json:"status"`
 }
 
-func (h *Handler) jobHandler(c *gin.Context) {
+func (h *handler) jobHandler(c *gin.Context) {
 	jobId := c.Param("jobId")
 	if jobId == "" {
 		c.Status(http.StatusNotFound)
@@ -50,7 +50,7 @@ func (h *Handler) jobHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
-func (h *Handler) jobsHandler(c *gin.Context) {
+func (h *handler) jobsHandler(c *gin.Context) {
 	descrFlag := strings.ToLower(c.Query("includeDescr"))
 	includeDescr := descrFlag == "true"
 
