@@ -9,17 +9,17 @@ import (
 	"job-scraper/internal/data/sqltypes"
 )
 
-type jobsRepo struct {
+type JobsRepo struct {
 	db *data.DB
 }
 
-func NewJobsRepo(db *data.DB) *jobsRepo {
-	return &jobsRepo{
+func NewJobsRepo(db *data.DB) *JobsRepo {
+	return &JobsRepo{
 		db: db,
 	}
 }
 
-func (repo *jobsRepo) Add(job *models.Job) error {
+func (repo *JobsRepo) Add(job *models.Job) error {
 	query := `
 		INSERT INTO jobs
 		(
@@ -58,17 +58,21 @@ func (repo *jobsRepo) Add(job *models.Job) error {
 	return nil
 }
 
-func (repo *jobsRepo) UpdateStatus(id string, status models.JobStatus) error {
+func (repo *JobsRepo) Update(job *models.Job) error {
 	query := `
 		UPDATE jobs
 		SET 
-			status = ?
+			status = ?,
+			grade = ?,
+			grade_reasoning = ?
 		WHERE id = ?
 	`
 
 	_, err := repo.db.ExecContext(context.TODO(), query,
-		status,
-		id,
+		job.Status,
+		job.Grade,
+		job.GradeReasoning,
+		job.Id,
 	)
 
 	if err != nil {
@@ -78,7 +82,7 @@ func (repo *jobsRepo) UpdateStatus(id string, status models.JobStatus) error {
 	return nil
 }
 
-func (repo *jobsRepo) GetByID(id string) (*models.Job, error) {
+func (repo *JobsRepo) GetByID(id string) (*models.Job, error) {
 	query := `
 		SELECT
 			id,
@@ -89,7 +93,9 @@ func (repo *jobsRepo) GetByID(id string) (*models.Job, error) {
 			company,
 			location,
 			num_applicants,
-			status
+			status,
+			grade,
+			grade_reasoning
 		FROM jobs
 		WHERE id = ?;
 	`
@@ -109,7 +115,7 @@ func (repo *jobsRepo) GetByID(id string) (*models.Job, error) {
 	if !hasJob {
 		return nil, nil
 	}
-	var job models.Job
+	job := &models.Job{}
 	var datePostedString string
 	err = rows.Scan(
 		&job.Id,
@@ -121,6 +127,8 @@ func (repo *jobsRepo) GetByID(id string) (*models.Job, error) {
 		&job.Location,
 		&job.NumApplicants,
 		&job.Status,
+		&job.Grade,
+		&job.GradeReasoning,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to scan job row: %w", err)
@@ -128,10 +136,10 @@ func (repo *jobsRepo) GetByID(id string) (*models.Job, error) {
 
 	job.DatePosted = sqltypes.ParseTimeFromSql(datePostedString)
 
-	return &job, nil
+	return job, nil
 }
 
-func (repo *jobsRepo) List() ([]models.Job, error) {
+func (repo *JobsRepo) List() ([]*models.Job, error) {
 	query := `
 		SELECT
 			id,
@@ -142,7 +150,9 @@ func (repo *jobsRepo) List() ([]models.Job, error) {
 			company,
 			location,
 			num_applicants,
-			status
+			status,
+			grade,
+			grade_reasoning
 		FROM jobs;
 	`
 
@@ -155,10 +165,10 @@ func (repo *jobsRepo) List() ([]models.Job, error) {
 	}
 
 	defer rows.Close()
-	var jobs []models.Job
+	var jobs []*models.Job
 
 	for rows.Next() {
-		var job models.Job
+		job := &models.Job{}
 		var datePostedString string
 
 		err := rows.Scan(
@@ -171,6 +181,8 @@ func (repo *jobsRepo) List() ([]models.Job, error) {
 			&job.Location,
 			&job.NumApplicants,
 			&job.Status,
+			&job.Grade,
+			&job.GradeReasoning,
 		)
 		if err != nil {
 			return jobs, fmt.Errorf("failed to scan job row: %w", err)
@@ -183,7 +195,7 @@ func (repo *jobsRepo) List() ([]models.Job, error) {
 	return jobs, nil
 }
 
-func (repo *jobsRepo) ListByStatus(status models.JobStatus) ([]models.Job, error) {
+func (repo *JobsRepo) ListByStatus(status models.JobStatus) ([]*models.Job, error) {
 	query := `
 		SELECT
 			id,
@@ -194,7 +206,9 @@ func (repo *jobsRepo) ListByStatus(status models.JobStatus) ([]models.Job, error
 			company,
 			location,
 			num_applicants,
-			status
+			status,
+			grade,
+			grade_reasoning
 		FROM jobs
 		WHERE status = ?;
 	`
@@ -208,10 +222,10 @@ func (repo *jobsRepo) ListByStatus(status models.JobStatus) ([]models.Job, error
 	}
 
 	defer rows.Close()
-	var jobs []models.Job
+	var jobs []*models.Job
 
 	for rows.Next() {
-		var job models.Job
+		job := &models.Job{}
 		var datePostedString string
 
 		err := rows.Scan(
@@ -224,6 +238,8 @@ func (repo *jobsRepo) ListByStatus(status models.JobStatus) ([]models.Job, error
 			&job.Location,
 			&job.NumApplicants,
 			&job.Status,
+			&job.Grade,
+			&job.GradeReasoning,
 		)
 		if err != nil {
 			return jobs, fmt.Errorf("failed to scan job row: %w", err)

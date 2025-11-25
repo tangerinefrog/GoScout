@@ -6,13 +6,13 @@ import (
 )
 
 type handler struct {
-	db          *data.DB
-	gradeStatus *state.GradingState
+	db         *data.DB
+	gradeState *state.GradingState
 }
 
 func NewHandler(db *data.DB) *handler {
 	return &handler{
-		db:          db,
-		gradeStatus: state.NewGradingLock(),
+		db:         db,
+		gradeState: state.NewGradingLock(),
 	}
 }

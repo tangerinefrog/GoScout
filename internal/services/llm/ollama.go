@@ -59,22 +59,22 @@ func NewChat(modelName model, sysPrompt string) (*chat, error) {
 	}, nil
 }
 
-func (c *chat) Chat(systemPrompt string, userPrompts []string) (string, error) {
+func (c *chat) Chat(userPrompts []string) (string, error) {
 	if len(userPrompts) == 0 {
 		return "", errors.New("user prompts are missing")
 	}
 
-	req := map[string]any{
-		"model":    string(c.model),
-		"messages": getMessages(systemPrompt, userPrompts),
-		"stream":   false,
+	req := chatRequest{
+		Model:    string(c.model),
+		Messages: getMessages(c.sysPrompt, userPrompts),
+		Stream:   false,
 	}
 
 	reqBody, err := json.Marshal(req)
 	if err != nil {
 		return "", fmt.Errorf("error marshaling request body: %w", err)
 	}
-	url := c.baseUrl + "/api/generate"
+	url := c.baseUrl + "/api/chat"
 	body, err := sendRequest(url, http.MethodPost, reqBody)
 	if err != nil {
 		return "", fmt.Errorf("error sending generate request: %w", err)

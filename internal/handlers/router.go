@@ -11,6 +11,7 @@ func (h *handler) SetupRoutes(r *gin.Engine) {
 	api.POST("/scrape", h.scrapeHandler)
 	api.GET("/jobs/:jobId", h.jobHandler)
 	api.GET("/export", h.exportHandler)
-	api.POST("/grade", h.gradeHandler)
+	api.POST("/grade", h.gradeAllHandler)
+	api.POST("/grade/:jobId", h.gradeJobHandler)
 	api.GET("/grade/status", h.gradeStatusHandler)
 }

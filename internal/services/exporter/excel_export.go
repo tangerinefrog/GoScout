@@ -5,6 +5,7 @@ import (
 	"job-scraper/internal/data"
 	"job-scraper/internal/data/repositories"
 	"os"
+	"strconv"
 
 	"github.com/xuri/excelize/v2"
 )
@@ -44,12 +45,23 @@ func (e *exporter) ExportToExcel() (string, error) {
 	for rowIdx, j := range jobs {
 		row := rowIdx + 2
 
+		var grade string
+		if j.Grade != nil {
+			grade = strconv.Itoa(*j.Grade)
+		}
+		var reasoning string
+		if j.GradeReasoning != nil {
+			reasoning = *j.GradeReasoning
+		}
+
 		f.SetCellValue(sheetName, fmt.Sprintf("A%d", row), j.Id)
 		f.SetCellValue(sheetName, fmt.Sprintf("B%d", row), j.Url)
 		f.SetCellValue(sheetName, fmt.Sprintf("C%d", row), j.Title)
 		f.SetCellValue(sheetName, fmt.Sprintf("D%d", row), j.Company)
 		f.SetCellValue(sheetName, fmt.Sprintf("E%d", row), j.DatePosted.Local().Format("2006-01-02 15:04:05"))
 		f.SetCellValue(sheetName, fmt.Sprintf("F%d", row), j.Status)
+		f.SetCellValue(sheetName, fmt.Sprintf("G%d", row), grade)
+		f.SetCellValue(sheetName, fmt.Sprintf("H%d", row), reasoning)
 	}
 
 	f.SetActiveSheet(index)
