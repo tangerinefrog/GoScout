@@ -1,6 +1,7 @@
 package scraper
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"job-scraper/internal/data"
@@ -28,10 +29,10 @@ func NewScraper(db *data.DB) *Scraper {
 	}
 }
 
-func (s *Scraper) ScrapeLinkedInJobs(keyword string, timeWindow time.Duration) ([]models.Job, error) {
+func (s *Scraper) ScrapeLinkedInJobs(ctx context.Context, keyword string, timeWindow time.Duration) ([]models.Job, error) {
 	keyword = strings.TrimSpace(keyword)
 
-	jobIds, err := getJobsFromSearch(keyword, timeWindow)
+	jobIds, err := getJobsFromSearch(ctx, keyword, timeWindow)
 	if err != nil {
 		return nil, err
 	}
@@ -42,7 +43,7 @@ func (s *Scraper) ScrapeLinkedInJobs(keyword string, timeWindow time.Duration) (
 	jRepo := repositories.NewJobsRepo(s.db)
 	res := make([]models.Job, 0, len(jobIds))
 	for _, jobId := range jobIds {
-		dbJob, err := jRepo.GetByID(jobId)
+		dbJob, err := jRepo.GetByID(ctx, jobId)
 		if err != nil {
 			log.Printf("could not get job with id '%s' from database: %v\n", jobId, err)
 			continue
@@ -53,7 +54,7 @@ func (s *Scraper) ScrapeLinkedInJobs(keyword string, timeWindow time.Duration) (
 		}
 
 		jobPageUrl := fmt.Sprintf("%s/jobPosting/%s", linkedInBaseUrl, jobId)
-		jobPostingContent, err := fetcher.FetchWithRetry(jobPageUrl, 5)
+		jobPostingContent, err := fetcher.FetchWithRetry(ctx, jobPageUrl, 5)
 
 		if err != nil {
 			log.Printf("could not get job with id '%s' from '%s': %v\n", jobId, jobPageUrl, err)
@@ -72,7 +73,7 @@ func (s *Scraper) ScrapeLinkedInJobs(keyword string, timeWindow time.Duration) (
 			job.Status = models.JobStatusIgnored
 		}
 
-		err = jRepo.Add(&job)
+		err = jRepo.Add(ctx, &job)
 		if err != nil {
 			log.Printf("could not save job with id '%s' from '%s' to database: %v\n", jobId, jobPageUrl, err)
 			continue
@@ -84,7 +85,7 @@ func (s *Scraper) ScrapeLinkedInJobs(keyword string, timeWindow time.Duration) (
 	return res, nil
 }
 
-func getJobsFromSearch(keywords string, timeWindow time.Duration) ([]string, error) {
+func getJobsFromSearch(ctx context.Context, keywords string, timeWindow time.Duration) ([]string, error) {
 	var ids []string
 
 	page := 1
@@ -92,7 +93,7 @@ func getJobsFromSearch(keywords string, timeWindow time.Duration) ([]string, err
 		params := buildSearchQueryParams(keywords, page, timeWindow)
 		searchUrl := fmt.Sprintf("%s/seeMoreJobPostings/search?%s", linkedInBaseUrl, params)
 
-		searchContent, err := fetcher.Fetch(searchUrl)
+		searchContent, err := fetcher.Fetch(ctx, searchUrl)
 		if err != nil {
 			if !errors.Is(err, fetcher.ErrorUnsuccessfulStatusCode) {
 				return nil, err

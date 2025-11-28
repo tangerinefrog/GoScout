@@ -19,7 +19,7 @@ func NewJobsRepo(db *data.DB) *JobsRepo {
 	}
 }
 
-func (repo *JobsRepo) Add(job *models.Job) error {
+func (repo *JobsRepo) Add(ctx context.Context, job *models.Job) error {
 	query := `
 		INSERT INTO jobs
 		(
@@ -39,7 +39,7 @@ func (repo *JobsRepo) Add(job *models.Job) error {
 		);
 	`
 
-	_, err := repo.db.ExecContext(context.TODO(), query,
+	_, err := repo.db.ExecContext(ctx, query,
 		job.Id,
 		job.Title,
 		job.Url,
@@ -58,7 +58,7 @@ func (repo *JobsRepo) Add(job *models.Job) error {
 	return nil
 }
 
-func (repo *JobsRepo) Update(job *models.Job) error {
+func (repo *JobsRepo) Update(ctx context.Context, job *models.Job) error {
 	query := `
 		UPDATE jobs
 		SET 
@@ -68,7 +68,7 @@ func (repo *JobsRepo) Update(job *models.Job) error {
 		WHERE id = ?
 	`
 
-	_, err := repo.db.ExecContext(context.TODO(), query,
+	_, err := repo.db.ExecContext(ctx, query,
 		job.Status,
 		job.Grade,
 		job.GradeReasoning,
@@ -82,7 +82,7 @@ func (repo *JobsRepo) Update(job *models.Job) error {
 	return nil
 }
 
-func (repo *JobsRepo) GetByID(id string) (*models.Job, error) {
+func (repo *JobsRepo) GetByID(ctx context.Context, id string) (*models.Job, error) {
 	query := `
 		SELECT
 			id,
@@ -100,7 +100,7 @@ func (repo *JobsRepo) GetByID(id string) (*models.Job, error) {
 		WHERE id = ?;
 	`
 
-	rows, err := repo.db.QueryContext(context.TODO(), query, id)
+	rows, err := repo.db.QueryContext(ctx, query, id)
 
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -139,7 +139,7 @@ func (repo *JobsRepo) GetByID(id string) (*models.Job, error) {
 	return job, nil
 }
 
-func (repo *JobsRepo) List() ([]*models.Job, error) {
+func (repo *JobsRepo) List(ctx context.Context) ([]*models.Job, error) {
 	query := `
 		SELECT
 			id,
@@ -156,7 +156,7 @@ func (repo *JobsRepo) List() ([]*models.Job, error) {
 		FROM jobs;
 	`
 
-	rows, err := repo.db.QueryContext(context.TODO(), query)
+	rows, err := repo.db.QueryContext(ctx, query)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil
@@ -195,7 +195,7 @@ func (repo *JobsRepo) List() ([]*models.Job, error) {
 	return jobs, nil
 }
 
-func (repo *JobsRepo) ListByStatus(status models.JobStatus) ([]*models.Job, error) {
+func (repo *JobsRepo) ListByStatus(ctx context.Context, status models.JobStatus) ([]*models.Job, error) {
 	query := `
 		SELECT
 			id,
@@ -213,7 +213,7 @@ func (repo *JobsRepo) ListByStatus(status models.JobStatus) ([]*models.Job, erro
 		WHERE status = ?;
 	`
 
-	rows, err := repo.db.QueryContext(context.TODO(), query, status)
+	rows, err := repo.db.QueryContext(ctx, query, status)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil

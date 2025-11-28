@@ -32,7 +32,7 @@ func (h *handler) jobHandler(c *gin.Context) {
 	}
 
 	jobsRepo := repositories.NewJobsRepo(h.db)
-	job, err := jobsRepo.GetByID(jobId)
+	job, err := jobsRepo.GetByID(c.Request.Context(), jobId)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -65,7 +65,7 @@ func (h *handler) jobsHandler(c *gin.Context) {
 	includeDescr := descrFlag == "true"
 
 	jobsRepo := repositories.NewJobsRepo(h.db)
-	jobs, err := jobsRepo.List()
+	jobs, err := jobsRepo.List(c.Request.Context())
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

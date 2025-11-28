@@ -59,7 +59,7 @@ func NewChat(modelName model, sysPrompt string) (*chat, error) {
 	}, nil
 }
 
-func (c *chat) Chat(userPrompts []string) (string, error) {
+func (c *chat) Chat(ctx context.Context, userPrompts []string) (string, error) {
 	if len(userPrompts) == 0 {
 		return "", errors.New("user prompts are missing")
 	}
@@ -75,7 +75,7 @@ func (c *chat) Chat(userPrompts []string) (string, error) {
 		return "", fmt.Errorf("error marshaling request body: %w", err)
 	}
 	url := c.baseUrl + "/api/chat"
-	body, err := sendRequest(url, http.MethodPost, reqBody)
+	body, err := sendRequest(ctx, url, http.MethodPost, reqBody)
 	if err != nil {
 		return "", fmt.Errorf("error sending generate request: %w", err)
 	}
@@ -93,12 +93,12 @@ func (c *chat) Chat(userPrompts []string) (string, error) {
 	return resp.Message.Content, nil
 }
 
-func sendRequest(url string, method string, reqBody []byte) ([]byte, error) {
+func sendRequest(ctx context.Context, url string, method string, reqBody []byte) ([]byte, error) {
 	client := http.Client{
 		Timeout: 10 * time.Minute,
 	}
 
-	req, err := http.NewRequestWithContext(context.TODO(), method, url, bytes.NewBuffer(reqBody))
+	req, err := http.NewRequestWithContext(ctx, method, url, bytes.NewBuffer(reqBody))
 	if err != nil {
 		return nil, err
 	}

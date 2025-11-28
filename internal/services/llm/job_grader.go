@@ -1,6 +1,7 @@
 package llm
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -26,7 +27,7 @@ func NewJobGrader(db *data.DB) *JobGrader {
 	}
 }
 
-func (jg *JobGrader) Grade(candidateProfile string, jobDescr string) (GradeResult, error) {
+func (jg *JobGrader) Grade(ctx context.Context, candidateProfile string, jobDescr string) (GradeResult, error) {
 	sysPromptBytes, err := os.ReadFile(sysPromptPath)
 	if err != nil {
 		return GradeResult{}, fmt.Errorf("system prompt file contents error: %w", err)
@@ -47,7 +48,7 @@ func (jg *JobGrader) Grade(candidateProfile string, jobDescr string) (GradeResul
 		jobDescr,
 	}
 
-	content, err := chat.Chat(prompts)
+	content, err := chat.Chat(ctx, prompts)
 	if err != nil {
 		return GradeResult{}, fmt.Errorf("error during generating a response from chat: %w", err)
 	}

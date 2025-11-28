@@ -12,10 +12,10 @@ import (
 
 var ErrorUnsuccessfulStatusCode error = errors.New("unsuccessful status code")
 
-func Fetch(url string) (body []byte, err error) {
+func Fetch(ctx context.Context, url string) (body []byte, err error) {
 	client := http.Client{}
 
-	req, err := http.NewRequestWithContext(context.TODO(), "GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	configureMockHeaders(req)
 
 	if err != nil {
@@ -41,12 +41,12 @@ func Fetch(url string) (body []byte, err error) {
 	return body, nil
 }
 
-func FetchWithRetry(url string, retryCount int) (body []byte, err error) {
+func FetchWithRetry(ctx context.Context, url string, retryCount int) (body []byte, err error) {
 	for i := range retryCount {
 		//delay formula: 2^i seconds
 		delay := time.Duration(math.Pow(2, float64(i))) * time.Second
 
-		body, err = Fetch(url)
+		body, err = Fetch(ctx, url)
 		if err != nil {
 			if errors.Is(err, ErrorUnsuccessfulStatusCode) {
 				log.Printf("got unsuccessful status code from '%s'", url)

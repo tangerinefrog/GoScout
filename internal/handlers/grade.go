@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"fmt"
 	"job-scraper/internal/data/models"
 	"job-scraper/internal/data/repositories"
@@ -38,7 +39,7 @@ func (h *handler) gradeAllHandler(c *gin.Context) {
 	h.gradeState.Lock()
 
 	jobsRepo := repositories.NewJobsRepo(h.db)
-	ungradedJobs, err := jobsRepo.ListByStatus(models.JobStatusCreated)
+	ungradedJobs, err := jobsRepo.ListByStatus(c.Request.Context(), models.JobStatusCreated)
 	if err != nil {
 		h.gradeState.Unlock()
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -108,7 +109,7 @@ func (h *handler) gradeJobHandler(c *gin.Context) {
 	h.gradeState.Lock()
 
 	jobsRepo := repositories.NewJobsRepo(h.db)
-	job, err := jobsRepo.GetByID(jobId)
+	job, err := jobsRepo.GetByID(c.Request.Context(), jobId)
 	if err != nil {
 		h.gradeState.Unlock()
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -147,7 +148,7 @@ func (h *handler) gradeJobHandler(c *gin.Context) {
 
 func gradeJob(job *models.Job, requirements string, grader *llm.JobGrader,
 	jobsRepo *repositories.JobsRepo) error {
-	res, err := grader.Grade(requirements, job.Description)
+	res, err := grader.Grade(context.TODO(), requirements, job.Description)
 	if err != nil {
 		return fmt.Errorf("error during grading job '%s': %w", job.Id, err)
 	}
@@ -155,7 +156,7 @@ func gradeJob(job *models.Job, requirements string, grader *llm.JobGrader,
 	job.Status = models.JobStatusPending
 	job.Grade = &res.Grade
 	job.GradeReasoning = &res.Reasoning
-	err = jobsRepo.Update(job)
+	err = jobsRepo.Update(context.TODO(), job)
 	if err != nil {
 		return fmt.Errorf("error during updating job '%s' grade: %w", job.Id, err)
 	}

@@ -33,7 +33,7 @@ func (h *handler) scrapeHandler(c *gin.Context) {
 	}
 
 	scraper := scraper.NewScraper(h.db)
-	_, err := scraper.ScrapeLinkedInJobs(keywords, time.Duration(periodDays)*24*time.Hour)
+	_, err := scraper.ScrapeLinkedInJobs(c.Request.Context(), keywords, time.Duration(periodDays)*24*time.Hour)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

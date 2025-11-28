@@ -1,6 +1,7 @@
 package exporter
 
 import (
+	"context"
 	"fmt"
 	"job-scraper/internal/data"
 	"job-scraper/internal/data/repositories"
@@ -22,9 +23,9 @@ func NewExcelExporter(db *data.DB) *exporter {
 	}
 }
 
-func (e *exporter) ExportToExcel() (string, error) {
+func (e *exporter) ExportToExcel(ctx context.Context) (string, error) {
 	jobsRepo := repositories.NewJobsRepo(e.db)
-	jobs, err := jobsRepo.List()
+	jobs, err := jobsRepo.List(ctx)
 	if err != nil {
 		return "", err
 	}

@@ -11,7 +11,7 @@ import (
 func (h *handler) exportHandler(c *gin.Context) {
 	exporter := exporter.NewExcelExporter(h.db)
 
-	filename, err := exporter.ExportToExcel()
+	filename, err := exporter.ExportToExcel(c.Request.Context())
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
