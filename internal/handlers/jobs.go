@@ -2,8 +2,10 @@ package handlers
 
 import (
 	"fmt"
+	"job-scraper/internal/data/models"
 	"job-scraper/internal/data/repositories"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -61,11 +63,38 @@ func (h *handler) jobHandler(c *gin.Context) {
 }
 
 func (h *handler) jobsHandler(c *gin.Context) {
-	descrFlag := strings.ToLower(c.Query("includeDescr"))
+	descrFlag := strings.ToLower(c.Query("include_descr"))
+	statusParam := strings.ToLower(strings.TrimSpace(c.Query("status")))
+	companyParam := strings.TrimSpace(c.Query("company"))
+	gradeParam := strings.TrimSpace(c.Query("grade_gt"))
+	dateParam := strings.TrimSpace(c.Query("date_gt"))
+
 	includeDescr := descrFlag == "true"
+	var statusFilter *models.JobStatus
+	if statusParam != "" {
+		s := models.JobStatus(statusParam)
+		statusFilter = &s
+	}
+
+	var companyFilter *string
+	if companyParam != "" {
+		companyFilter = &companyParam
+	}
+
+	var gradeFilter *int
+	grade, err := strconv.Atoi(gradeParam)
+	if err == nil && grade > 0 && grade < 5 {
+		gradeFilter = &grade
+	}
+
+	var dateFilter *time.Time
+	date, err := time.Parse("2006-01-02", dateParam)
+	if err == nil {
+		dateFilter = &date
+	}
 
 	jobsRepo := repositories.NewJobsRepo(h.db)
-	jobs, err := jobsRepo.List(c.Request.Context())
+	jobs, err := jobsRepo.List(c.Request.Context(), statusFilter, companyFilter, gradeFilter, dateFilter)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

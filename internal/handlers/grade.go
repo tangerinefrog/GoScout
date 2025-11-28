@@ -39,7 +39,9 @@ func (h *handler) gradeAllHandler(c *gin.Context) {
 	h.gradeState.Lock()
 
 	jobsRepo := repositories.NewJobsRepo(h.db)
-	ungradedJobs, err := jobsRepo.ListByStatus(c.Request.Context(), models.JobStatusCreated)
+
+	status := models.JobStatusCreated
+	ungradedJobs, err := jobsRepo.List(c.Request.Context(), &status, nil, nil, nil)
 	if err != nil {
 		h.gradeState.Unlock()
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

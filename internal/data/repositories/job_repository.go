@@ -7,6 +7,7 @@ import (
 	"job-scraper/internal/data"
 	"job-scraper/internal/data/models"
 	"job-scraper/internal/data/sqltypes"
+	"time"
 )
 
 type JobsRepo struct {
@@ -134,12 +135,13 @@ func (repo *JobsRepo) GetByID(ctx context.Context, id string) (*models.Job, erro
 		return nil, fmt.Errorf("failed to scan job row: %w", err)
 	}
 
-	job.DatePosted = sqltypes.ParseTimeFromSql(datePostedString)
+	job.DatePosted, _ = sqltypes.ParseTimeFromSql(datePostedString)
 
 	return job, nil
 }
 
-func (repo *JobsRepo) List(ctx context.Context) ([]*models.Job, error) {
+func (repo *JobsRepo) List(ctx context.Context,
+	status *models.JobStatus, company *string, grade *int, minDate *time.Time) ([]*models.Job, error) {
 	query := `
 		SELECT
 			id,
@@ -153,10 +155,26 @@ func (repo *JobsRepo) List(ctx context.Context) ([]*models.Job, error) {
 			status,
 			grade,
 			grade_reasoning
-		FROM jobs;
+		FROM jobs
+		WHERE 
+			(? IS NULL OR ? = status)
+			AND (? IS NULL OR ? = company) 
+			AND (? IS NULL OR grade > ?) 
+			AND (? IS NULL OR date_posted > ?)
+		ORDER BY date_posted DESC;
 	`
+	var dateFilter *string
+	if minDate != nil {
+		d := sqltypes.TimeToSqlFormat(*minDate)
+		dateFilter = &d
+	}
 
-	rows, err := repo.db.QueryContext(ctx, query)
+	rows, err := repo.db.QueryContext(ctx, query,
+		status, status,
+		company, company,
+		grade, grade,
+		dateFilter, dateFilter,
+	)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil
@@ -187,64 +205,7 @@ func (repo *JobsRepo) List(ctx context.Context) ([]*models.Job, error) {
 		if err != nil {
 			return jobs, fmt.Errorf("failed to scan job row: %w", err)
 		}
-		job.DatePosted = sqltypes.ParseTimeFromSql(datePostedString)
-
-		jobs = append(jobs, job)
-	}
-
-	return jobs, nil
-}
-
-func (repo *JobsRepo) ListByStatus(ctx context.Context, status models.JobStatus) ([]*models.Job, error) {
-	query := `
-		SELECT
-			id,
-			title,
-			url,
-			description,
-			date_posted,
-			company,
-			location,
-			num_applicants,
-			status,
-			grade,
-			grade_reasoning
-		FROM jobs
-		WHERE status = ?;
-	`
-
-	rows, err := repo.db.QueryContext(ctx, query, status)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, nil
-		}
-		return nil, fmt.Errorf("jobs list by status query failed: %w", err)
-	}
-
-	defer rows.Close()
-	var jobs []*models.Job
-
-	for rows.Next() {
-		job := &models.Job{}
-		var datePostedString string
-
-		err := rows.Scan(
-			&job.Id,
-			&job.Title,
-			&job.Url,
-			&job.Description,
-			&datePostedString,
-			&job.Company,
-			&job.Location,
-			&job.NumApplicants,
-			&job.Status,
-			&job.Grade,
-			&job.GradeReasoning,
-		)
-		if err != nil {
-			return jobs, fmt.Errorf("failed to scan job row: %w", err)
-		}
-		job.DatePosted = sqltypes.ParseTimeFromSql(datePostedString)
+		job.DatePosted, _ = sqltypes.ParseTimeFromSql(datePostedString)
 
 		jobs = append(jobs, job)
 	}

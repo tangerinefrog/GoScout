@@ -25,7 +25,7 @@ func NewExcelExporter(db *data.DB) *exporter {
 
 func (e *exporter) ExportToExcel(ctx context.Context) (string, error) {
 	jobsRepo := repositories.NewJobsRepo(e.db)
-	jobs, err := jobsRepo.List(ctx)
+	jobs, err := jobsRepo.List(ctx, nil, nil, nil, nil)
 	if err != nil {
 		return "", err
 	}
