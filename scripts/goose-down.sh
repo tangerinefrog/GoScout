@@ -1,1 +1,0 @@
-goose -dir ./migrations down
