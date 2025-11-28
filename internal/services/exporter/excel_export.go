@@ -36,7 +36,7 @@ func (e *exporter) ExportToExcel() (string, error) {
 		return "", err
 	}
 
-	headers := []string{"ID", "URL", "Title", "Company", "Date Posted", "Status"}
+	headers := []string{"ID", "URL", "Title", "Company", "Location", "Date Posted", "Status"}
 	for colIdx, h := range headers {
 		cell, _ := excelize.CoordinatesToCellName(colIdx+1, 1)
 		f.SetCellValue(sheetName, cell, h)
@@ -58,10 +58,11 @@ func (e *exporter) ExportToExcel() (string, error) {
 		f.SetCellValue(sheetName, fmt.Sprintf("B%d", row), j.Url)
 		f.SetCellValue(sheetName, fmt.Sprintf("C%d", row), j.Title)
 		f.SetCellValue(sheetName, fmt.Sprintf("D%d", row), j.Company)
-		f.SetCellValue(sheetName, fmt.Sprintf("E%d", row), j.DatePosted.Local().Format("2006-01-02 15:04:05"))
-		f.SetCellValue(sheetName, fmt.Sprintf("F%d", row), j.Status)
-		f.SetCellValue(sheetName, fmt.Sprintf("G%d", row), grade)
-		f.SetCellValue(sheetName, fmt.Sprintf("H%d", row), reasoning)
+		f.SetCellValue(sheetName, fmt.Sprintf("E%d", row), j.Location)
+		f.SetCellValue(sheetName, fmt.Sprintf("F%d", row), j.DatePosted.Local().Format("2006-01-02 15:04:05"))
+		f.SetCellValue(sheetName, fmt.Sprintf("G%d", row), j.Status)
+		f.SetCellValue(sheetName, fmt.Sprintf("H%d", row), grade)
+		f.SetCellValue(sheetName, fmt.Sprintf("I%d", row), reasoning)
 	}
 
 	f.SetActiveSheet(index)
