@@ -4,6 +4,7 @@ import (
 	"job-scraper/internal/data"
 	"job-scraper/internal/handlers"
 	"log"
+	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -24,8 +25,12 @@ func main() {
 	h := handlers.NewHandler(db)
 	h.SetupRoutes(r)
 
-	port := "8080"
-	log.Printf("Server is starting on port :%s...\n", port)
-	err = r.Run(":" + port)
+	addr := os.Getenv("SRV_ADDR")
+	if addr == "" {
+		log.Fatalf("Server address is not defined in the .env file")
+	}
+
+	log.Printf("Server is listening on ':%s'...\n", addr)
+	err = r.Run(addr)
 	log.Printf("Server error: %v\n", err)
 }
