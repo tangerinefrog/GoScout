@@ -7,7 +7,7 @@ import (
 	"os"
 	"time"
 
-	_ "github.com/mattn/go-sqlite3"
+	_ "modernc.org/sqlite"
 )
 
 type DB struct {
@@ -20,7 +20,7 @@ func Init() (*DB, error) {
 		return nil, errors.New("could not get db connection string from the .env file")
 	}
 
-	db, err := sql.Open("sqlite3", dsn)
+	db, err := sql.Open("sqlite", dsn)
 	if err != nil {
 		return nil, fmt.Errorf("failed opening a connection to a db: %w", err)
 	}
