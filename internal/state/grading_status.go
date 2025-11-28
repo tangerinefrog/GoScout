@@ -1,11 +1,16 @@
 package state
 
-import "sync"
+import (
+	"context"
+	"sync"
+)
 
 type GradingState struct {
 	isGrading bool
 	status    string
 	mu        *sync.RWMutex
+	cancel    context.CancelFunc
+	Ctx       context.Context
 }
 
 func NewGradingLock() *GradingState {
@@ -15,8 +20,10 @@ func NewGradingLock() *GradingState {
 }
 
 func (l *GradingState) Lock() {
-	l.mu.RLock()
-	defer l.mu.RUnlock()
+	l.mu.Lock()
+	defer l.mu.Unlock()
+
+	l.Ctx, l.cancel = context.WithCancel(context.Background())
 
 	l.isGrading = true
 }
@@ -29,8 +36,8 @@ func (l *GradingState) Unlock() {
 }
 
 func (l *GradingState) IsGrading() bool {
-	l.mu.Lock()
-	defer l.mu.Unlock()
+	l.mu.RLock()
+	defer l.mu.RUnlock()
 
 	return l.isGrading
 }
@@ -47,4 +54,11 @@ func (l *GradingState) GetStatus() string {
 	defer l.mu.RUnlock()
 
 	return l.status
+}
+
+func (l *GradingState) Cancel() {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+
+	l.cancel()
 }

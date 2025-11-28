@@ -63,7 +63,7 @@ func (h *handler) gradeAllHandler(c *gin.Context) {
 		for i, job := range jobsBatch {
 			status := fmt.Sprintf("grading job '%s' (%d of %d)", job.Id, i+1, len(jobsBatch))
 			h.gradeState.SetStatus(status)
-			err := gradeJob(job, requirements, grader, jobsRepo)
+			err := gradeJob(h.gradeState.Ctx, job, requirements, grader, jobsRepo)
 			if err != nil {
 				h.gradeState.SetStatus(err.Error())
 				return
@@ -130,7 +130,7 @@ func (h *handler) gradeJobHandler(c *gin.Context) {
 		status := fmt.Sprintf("grading job '%s' (1 of 1)", job.Id)
 		h.gradeState.SetStatus(status)
 
-		err := gradeJob(job, requirements, grader, jobsRepo)
+		err := gradeJob(h.gradeState.Ctx, job, requirements, grader, jobsRepo)
 		if err != nil {
 			h.gradeState.SetStatus(err.Error())
 			return
@@ -146,9 +146,13 @@ func (h *handler) gradeJobHandler(c *gin.Context) {
 	c.Status(200)
 }
 
-func gradeJob(job *models.Job, requirements string, grader *llm.JobGrader,
+func (h *handler) stopGradingHandler(c *gin.Context) {
+	h.gradeState.Cancel()
+}
+
+func gradeJob(ctx context.Context, job *models.Job, requirements string, grader *llm.JobGrader,
 	jobsRepo *repositories.JobsRepo) error {
-	res, err := grader.Grade(context.TODO(), requirements, job.Description)
+	res, err := grader.Grade(ctx, requirements, job.Description)
 	if err != nil {
 		return fmt.Errorf("error during grading job '%s': %w", job.Id, err)
 	}
@@ -156,7 +160,7 @@ func gradeJob(job *models.Job, requirements string, grader *llm.JobGrader,
 	job.Status = models.JobStatusPending
 	job.Grade = &res.Grade
 	job.GradeReasoning = &res.Reasoning
-	err = jobsRepo.Update(context.TODO(), job)
+	err = jobsRepo.Update(ctx, job)
 	if err != nil {
 		return fmt.Errorf("error during updating job '%s' grade: %w", job.Id, err)
 	}
