@@ -29,15 +29,13 @@ func NewScraper(db *data.DB) *Scraper {
 	}
 }
 
-func (s *Scraper) ScrapeLinkedInJobs(ctx context.Context, keyword string, timeWindow time.Duration) ([]models.Job, error) {
+func (s *Scraper) ScrapeLinkedInJobs(ctx context.Context, keyword string, filterKeywords []string, timeWindow time.Duration) ([]models.Job, error) {
 	keyword = strings.TrimSpace(keyword)
 
 	jobIds, err := getJobsFromSearch(ctx, keyword, timeWindow)
 	if err != nil {
 		return nil, err
 	}
-
-	keywordParts := strings.Split(keyword, " ")
 
 	validator := validator.NewKeywordValidator()
 	jRepo := repositories.NewJobsRepo(s.db)
@@ -68,7 +66,7 @@ func (s *Scraper) ScrapeLinkedInJobs(ctx context.Context, keyword string, timeWi
 		}
 		job.Status = models.JobStatusCreated
 
-		valid := validator.ValidateKeywords(keywordParts, job.Description+job.Title)
+		valid := validator.ValidateKeywords(filterKeywords, job.Description+job.Title)
 		if !valid {
 			job.Status = models.JobStatusIgnored
 		}

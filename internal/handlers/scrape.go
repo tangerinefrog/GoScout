@@ -9,8 +9,9 @@ import (
 )
 
 type ScrapeRequest struct {
-	Keywords   string `json:"keywords"`
-	PeriodDays int    `json:"period_days"`
+	SearchBy    string   `json:"search_by"`
+	FilterBy    []string `json:"filter_by"`
+	PeriodHours int      `json:"period_hours"`
 }
 
 func (h *handler) scrapeHandler(c *gin.Context) {
@@ -20,20 +21,20 @@ func (h *handler) scrapeHandler(c *gin.Context) {
 		return
 	}
 
-	keywords := req.Keywords
-	if keywords == "" {
-		c.String(http.StatusBadRequest, "Missing 'keywords' query param")
+	searchBy := req.SearchBy
+	if searchBy == "" {
+		c.String(http.StatusBadRequest, "Missing 'search_keywords' query param")
 		return
 	}
 
-	periodDays := req.PeriodDays
+	periodDays := req.PeriodHours
 	if periodDays == 0 {
-		c.String(http.StatusBadRequest, "Missing 'period_days' query param")
+		c.String(http.StatusBadRequest, "Missing 'period_hours' query param")
 		return
 	}
 
 	scraper := scraper.NewScraper(h.db)
-	_, err := scraper.ScrapeLinkedInJobs(c.Request.Context(), keywords, time.Duration(periodDays)*24*time.Hour)
+	_, err := scraper.ScrapeLinkedInJobs(c.Request.Context(), searchBy, req.FilterBy, time.Duration(periodDays)*time.Hour)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
