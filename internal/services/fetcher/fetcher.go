@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"io"
-	"log"
 	"math"
 	"net/http"
 	"time"
@@ -49,7 +48,6 @@ func FetchWithRetry(ctx context.Context, url string, retryCount int) (body []byt
 		body, err = Fetch(ctx, url)
 		if err != nil {
 			if errors.Is(err, ErrorUnsuccessfulStatusCode) {
-				log.Printf("got unsuccessful status code from '%s'", url)
 				time.Sleep(delay)
 				continue
 			}
