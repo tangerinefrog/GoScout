@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"job-scraper/internal/data/models"
 	"job-scraper/internal/data/repositories"
 	"net/http"
@@ -26,6 +25,11 @@ type JobResponse struct {
 	GradeReasoning *string   `json:"grade_reasoning"`
 }
 
+type JobUpdateRequest struct {
+	Status string `json:"status"`
+	Grade  int    `json:"grade"`
+}
+
 func (h *handler) jobHandler(c *gin.Context) {
 	jobId := c.Param("jobId")
 	if jobId == "" {
@@ -41,7 +45,7 @@ func (h *handler) jobHandler(c *gin.Context) {
 	}
 
 	if job == nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": fmt.Sprintf("no job with id '%s'", jobId)})
+		c.Status(http.StatusNotFound)
 		return
 	}
 
@@ -121,4 +125,60 @@ func (h *handler) jobsHandler(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, result)
+}
+
+func (h *handler) updateJobHandler(c *gin.Context) {
+	jobId := c.Param("jobId")
+	if jobId == "" {
+		c.Status(http.StatusNotFound)
+		return
+	}
+
+	jobsRepo := repositories.NewJobsRepo(h.db)
+
+	job, err := jobsRepo.GetByID(c.Request.Context(), jobId)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if job == nil {
+		c.Status(http.StatusNotFound)
+		return
+	}
+
+	var req JobUpdateRequest
+	if err := c.BindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if req.Status != "" {
+		job.Status = models.JobStatus(strings.ToLower(req.Status))
+	}
+	if req.Grade > 0 && req.Grade < 6 {
+		job.Grade = &req.Grade
+	}
+
+	err = jobsRepo.Update(c.Request.Context(), job)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	resp := JobResponse{
+		Id:             job.Id,
+		Title:          job.Title,
+		Url:            job.Url,
+		Description:    job.Description,
+		DatePosted:     job.DatePosted,
+		Company:        job.Company,
+		Location:       job.Location,
+		NumApplicants:  job.NumApplicants,
+		Status:         string(job.Status),
+		Grade:          job.Grade,
+		GradeReasoning: job.GradeReasoning,
+	}
+
+	c.JSON(http.StatusOK, resp)
 }
