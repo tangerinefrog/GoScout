@@ -45,7 +45,7 @@ func ParseJob(body []byte, id string) (models.Job, error) {
 	job.Id = id
 	job.Title = findAndTrimText(doc, ".top-card-layout__title")
 	job.Company = findAndTrimText(doc, ".topcard__org-name-link")
-	job.Location = findAndTrimText(doc, ".topcard__flavor.topcard__flavor--bullet")
+	job.Location = getLocation(findAndTrimText(doc, ".topcard__flavor.topcard__flavor--bullet"))
 	job.Description = findAndTrimHtml(doc, ".show-more-less-html__markup")
 	job.Url, _ = doc.Find(".topcard__link").Attr("href")
 
@@ -84,6 +84,11 @@ func getApplicants(s string) string {
 	}
 
 	return ""
+}
+
+func getLocation(s string) string {
+	parts := strings.Split(s, ",")
+	return parts[len(parts)-1]
 }
 
 func extractDate(timeAgo string) (time.Time, error) {
