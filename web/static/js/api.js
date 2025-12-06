@@ -1,6 +1,6 @@
 const statuses = [
     'created',
-    'pending',
+    'graded',
     'ignored',
     'applied',
 ]

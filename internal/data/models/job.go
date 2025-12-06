@@ -5,7 +5,7 @@ import "time"
 type JobStatus string
 
 const JobStatusCreated JobStatus = "created"
-const JobStatusPending JobStatus = "pending"
+const JobStatusPending JobStatus = "graded"
 const JobStatusIgnored JobStatus = "ignored"
 const JobStatusApplied JobStatus = "applied"
 
