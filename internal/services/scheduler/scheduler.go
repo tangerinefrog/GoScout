@@ -18,7 +18,7 @@ func ScrapeRecurring(ctx context.Context, d time.Duration, db *data.DB, keyword 
 
 		start := time.Now()
 		log.Println("Scraping process started")
-		_, err := s.ScrapeLinkedInJobs(tCtx, "go golang", nil, d)
+		_, err := s.ScrapeLinkedInJobs(tCtx, keyword, filterKeywords, d)
 		if err != nil {
 			log.Printf("recurrent scraping encountered an error: %v", err)
 			continue
