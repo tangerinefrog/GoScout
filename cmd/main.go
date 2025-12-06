@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gin-contrib/cors"
 	"github.com/joho/godotenv"
 )
 
@@ -27,6 +28,8 @@ func main() {
 	}
 
 	r := gin.Default()
+	r.Use(cors.Default())
+
 	h := handlers.NewHandler(db)
 	h.SetupRoutes(r)
 

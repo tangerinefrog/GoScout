@@ -19,7 +19,7 @@ type JobResponse struct {
 	DatePosted     time.Time `json:"date_posted"`
 	Company        string    `json:"company"`
 	Location       string    `json:"location"`
-	NumApplicants  string    `json:"numApplicants"`
+	NumApplicants  string    `json:"num_applicants"`
 	Status         string    `json:"status"`
 	Grade          *int      `json:"grade"`
 	GradeReasoning *string   `json:"grade_reasoning"`
