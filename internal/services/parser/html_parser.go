@@ -48,7 +48,7 @@ func ParseJob(body []byte, id string) (models.Job, error) {
 	job.Location = findAndTrimText(doc, ".topcard__flavor.topcard__flavor--bullet")
 	job.Description = findAndTrimHtml(doc, ".show-more-less-html__markup")
 	job.Url, _ = doc.Find(".topcard__link").Attr("href")
-	
+
 	timeAgo := findAndTrimText(doc, ".posted-time-ago__text")
 	date, err := extractDate(timeAgo)
 	if err == nil {
@@ -73,9 +73,12 @@ func findAndTrimText(doc *goquery.Document, selector string) string {
 func getApplicants(s string) string {
 	if s != "" {
 		parts := strings.Split(s, " ")
-		if parts[0] == "Be" {
+		switch parts[0] {
+		case "Be":
 			return "<" + parts[4]
-		} else {
+		case "Over":
+			return ">" + parts[1]
+		default:
 			return parts[0]
 		}
 	}
