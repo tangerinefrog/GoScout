@@ -18,8 +18,8 @@ async function setupGrid() {
             { field: 'company', width: 200 },
             { field: 'location', width: 200, filter: true, filterParams: getFilterParams() },
             { field: 'num_applicants', headerName: 'Applicants',  width: 150, sortable: false },
-            { field: 'status', width: 120, editable: true, cellEditor: "agSelectCellEditor", cellEditorParams: { values: statuses, }, onCellValueChanged: onEdit, filter: true, filterParams: getFilterParams() },
-            { field: 'note', flex: 1,  editable: true, cellEditor: "agTextCellEditor", onCellValueChanged: onEdit },
+            { field: 'status', width: 120, editable: true, cellEditor: 'agSelectCellEditor', cellEditorParams: { values: statuses, }, onCellValueChanged: onEdit, filter: true, filterParams: getFilterParams() },
+            { field: 'note', flex: 1,  editable: true, cellEditor: 'agTextCellEditor', onCellValueChanged: onEdit },
         ],
         
         theme: theme,
@@ -58,7 +58,7 @@ function titleRenderer(cell) {
 function getFilterParams() {
     return {
         closeOnApply: true,
-        filterOptions: ["contains"]
+        filterOptions: ['contains', 'notContains']
     }
 }
 
