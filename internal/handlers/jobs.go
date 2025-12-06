@@ -23,11 +23,13 @@ type JobResponse struct {
 	Status         string    `json:"status"`
 	Grade          *int      `json:"grade"`
 	GradeReasoning *string   `json:"grade_reasoning"`
+	Note           string    `json:"note"`
 }
 
 type JobUpdateRequest struct {
-	Status string `json:"status"`
-	Grade  int    `json:"grade"`
+	Status string  `json:"status"`
+	Grade  int     `json:"grade"`
+	Note   *string `json:"note"`
 }
 
 func (h *handler) jobHandler(c *gin.Context) {
@@ -61,6 +63,7 @@ func (h *handler) jobHandler(c *gin.Context) {
 		Status:         string(job.Status),
 		Grade:          job.Grade,
 		GradeReasoning: job.GradeReasoning,
+		Note:           job.Note,
 	}
 
 	c.JSON(http.StatusOK, resp)
@@ -118,6 +121,7 @@ func (h *handler) jobsHandler(c *gin.Context) {
 			Status:         string(job.Status),
 			Grade:          job.Grade,
 			GradeReasoning: job.GradeReasoning,
+			Note:           job.Note,
 		}
 		if includeDescr {
 			result[i].Description = job.Description
@@ -159,6 +163,9 @@ func (h *handler) updateJobHandler(c *gin.Context) {
 	if req.Grade > 0 && req.Grade < 6 {
 		job.Grade = &req.Grade
 	}
+	if req.Note != nil {
+		job.Note = *req.Note
+	}
 
 	err = jobsRepo.Update(c.Request.Context(), job)
 	if err != nil {
@@ -178,6 +185,7 @@ func (h *handler) updateJobHandler(c *gin.Context) {
 		Status:         string(job.Status),
 		Grade:          job.Grade,
 		GradeReasoning: job.GradeReasoning,
+		Note:           job.Note,
 	}
 
 	c.JSON(http.StatusOK, resp)

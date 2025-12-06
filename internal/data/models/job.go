@@ -21,4 +21,5 @@ type Job struct {
 	Status         JobStatus
 	Grade          *int
 	GradeReasoning *string
+	Note           string
 }

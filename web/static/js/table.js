@@ -8,16 +8,20 @@ async function setupGrid() {
         paginationPageSize: 50,
         paginationPageSizeSelector: [50, 100, 200],
         enableCellTextSelection: true,
+        autoSizeStrategy: {
+            defaultMinWidth: 100,
+        },
         
         columnDefs: [
+            { field: 'date_posted', headerName: 'Date', type: 'dateTime', width: 120 },
             { field: 'title', width: 300, cellRenderer: titleRenderer },
             { field: 'company', width: 200 },
             { field: 'location', width: 200, filter: true, filterParams: getFilterParams() },
             { field: 'num_applicants', headerName: 'Applicants',  width: 150, sortable: false },
             { field: 'status', width: 120, editable: true, cellEditor: "agSelectCellEditor", cellEditorParams: { values: statuses, }, onCellValueChanged: onEdit, filter: true, filterParams: getFilterParams() },
-            { field: 'date_posted', headerName: 'Date', type: 'dateTime', width: 120 },
+            { field: 'note', flex: 1,  editable: true, cellEditor: "agTextCellEditor", onCellValueChanged: onEdit },
         ],
-
+        
         theme: theme,
     };
 
@@ -40,6 +44,7 @@ async function getRows() {
             status: j.status,
             num_applicants: j.num_applicants,
             date_posted: dateFormatted,
+            note: j.note,
         }
     });
 
@@ -60,7 +65,11 @@ function getFilterParams() {
 async function onEdit(e) {
     const id = e.data.id;
     const fieldName = e.colDef.field;
-    const value = e.newValue;
+    let value = e.newValue;
+
+    if(e.colDef.cellDataType === 'text' && value === null) {
+        value = '';
+    }
 
     const isUpdated = await updateJob(id, fieldName, value);
     if (!isUpdated) {
