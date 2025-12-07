@@ -22,4 +22,5 @@ type Job struct {
 	Grade          *int
 	GradeReasoning *string
 	Note           string
+	IsInvalid      bool
 }

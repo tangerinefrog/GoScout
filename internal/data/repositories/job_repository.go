@@ -33,11 +33,12 @@ func (repo *JobsRepo) Add(ctx context.Context, job *models.Job) error {
 			location,
 			num_applicants,
 			status,
-			note
+			note,
+			is_invalid
 		)
 		VALUES
 		(
-			?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+			?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
 		);
 	`
 
@@ -52,6 +53,7 @@ func (repo *JobsRepo) Add(ctx context.Context, job *models.Job) error {
 		job.NumApplicants,
 		job.Status,
 		job.Note,
+		job.IsInvalid,
 	)
 
 	if err != nil {
@@ -101,7 +103,8 @@ func (repo *JobsRepo) GetByID(ctx context.Context, id string) (*models.Job, erro
 			status,
 			grade,
 			grade_reasoning,
-			note
+			note,
+			is_invalid
 		FROM jobs
 		WHERE id = ?;
 	`
@@ -136,6 +139,7 @@ func (repo *JobsRepo) GetByID(ctx context.Context, id string) (*models.Job, erro
 		&job.Grade,
 		&job.GradeReasoning,
 		&job.Note,
+		&job.IsInvalid,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to scan job row: %w", err)
@@ -164,7 +168,8 @@ func (repo *JobsRepo) List(ctx context.Context,
 			note
 		FROM jobs
 		WHERE 
-			(? IS NULL OR ? = status)
+			is_invalid = 0
+			AND (? IS NULL OR ? = status)
 			AND (? IS NULL OR ? = company) 
 			AND (? IS NULL OR grade > ?) 
 			AND (? IS NULL OR date_posted > ?)

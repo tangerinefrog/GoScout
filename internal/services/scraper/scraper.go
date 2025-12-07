@@ -68,7 +68,7 @@ func (s *Scraper) ScrapeLinkedInJobs(ctx context.Context, keyword string, filter
 
 		valid := validator.ValidateKeywords(filterKeywords, job.Description+job.Title)
 		if !valid {
-			job.Status = models.JobStatusIgnored
+			job.IsInvalid = true
 		}
 
 		err = jRepo.Add(ctx, &job)
