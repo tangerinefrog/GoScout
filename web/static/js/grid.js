@@ -63,11 +63,11 @@ function defineColumns() {
         },
         {
             field: 'grade',
-            width: 150,
+            width: 70,
         },
         {
             field: 'status',
-            width: 120,
+            width: 90,
             editable: true,
             cellEditor: 'agSelectCellEditor',
             cellEditorParams: {
@@ -76,6 +76,7 @@ function defineColumns() {
             onCellValueChanged: onEdit,
             filter: true,
             filterParams: getFilterParams(),
+            cellStyle: statusCellStyle
         },
         {
             field: 'note',
@@ -89,6 +90,36 @@ function defineColumns() {
 
 function titleRenderer(cell) {
     return `<a href="${cell.value.url}" target="_blank">${cell.value.title}</a>`;
+}
+
+function statusCellStyle(cell) {
+    const style = {
+        textAlign: 'center',
+    }
+
+    switch (cell.value) {
+        case 'created':
+            style.color = '#ffffff';
+            style.backgroundColor = '#2b2b2b';
+            break;
+        case 'graded':
+            style.color = '#000000';
+            style.backgroundColor = '#d7c909ff';
+            style.borderRadius = '8px';
+            break;
+        case 'ignored':
+            style.color = '#ffffffff';
+            style.backgroundColor = '#a60e0ea9';
+            style.borderRadius = '8px';
+            break;
+        case 'applied':
+            style.color = '#ffffffff';
+            style.backgroundColor = '#1c8305ff';
+            style.borderRadius = '8px';
+            break;
+    }
+
+    return style;
 }
 
 function getFilterParams() {
