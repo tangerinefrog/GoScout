@@ -15,7 +15,8 @@ type GradingState struct {
 
 func NewGradingLock() *GradingState {
 	return &GradingState{
-		mu: &sync.RWMutex{},
+		mu:     &sync.RWMutex{},
+		status: "Not started yet",
 	}
 }
 

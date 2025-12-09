@@ -50,3 +50,22 @@ async function onScrapeBtnClick() {
         await refreshGrid();
     }
 }
+
+async function onStartGradingBtnClick() {
+    const ok = await startGrading();
+    if (!ok) {
+        showErrorToast('Grading start failed');
+    } else {
+        showSuccessToast('Grading started');
+    }
+}
+
+async function onGradeStatusBtnClick() {
+    const status = await getGradingStatus();
+    if (!status) {
+        showErrorToast('Failed to get grading status');
+    } else {
+        $('.js-grade-status-modal-text').text(status);
+        MicroModal.show('grade-status-modal');
+    }
+}

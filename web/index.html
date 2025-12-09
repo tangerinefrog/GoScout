@@ -23,6 +23,8 @@
     <div class="header">
         <button class="button button-orange" data-micromodal-trigger="options-modal">Options</button>
         <button class="button button-green" onclick="onScrapeBtnClick()">Scrape</button>
+        <button class="button button-green" onclick="onStartGradingBtnClick()">Grade All</button>
+        <button class="button button-green" onclick="onGradeStatusBtnClick()">Grade Status</button>
     </div>
     <div id="jobsGrid"></div>
 
@@ -80,6 +82,26 @@
                 </header>
                 <main class="modal__content">
                     <span class="js-grading-modal-text">
+                    </span>
+                </main>
+                <footer class="modal__footer">
+                    <button class="modal__btn button button-orange" data-micromodal-close>Close</button>
+                </footer>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal micromodal-slide" id="grade-status-modal" aria-hidden="true">
+        <div class="modal__overlay" tabindex="-1">
+            <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="grade-status-modal-title">
+                <header class="modal__header">
+                    <h2 class="modal__title">
+                        Grading status
+                    </h2>
+                    <button class="modal__close" role="button" aria-label="Close modal" data-micromodal-close></button>
+                </header>
+                <main class="modal__content">
+                    <span class="js-grade-status-modal-text">
                     </span>
                 </main>
                 <footer class="modal__footer">

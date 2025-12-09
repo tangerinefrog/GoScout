@@ -20,7 +20,7 @@ type GradeRequest struct {
 
 func (h *handler) gradeAllHandler(c *gin.Context) {
 	var req GradeRequest
-	if err := c.BindJSON(&req); err != nil {
+	if err := c.BindJSON(&req); err != nil && !errors.Is(err, io.EOF) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}

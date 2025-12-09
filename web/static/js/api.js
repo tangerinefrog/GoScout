@@ -84,7 +84,7 @@ async function scrapeJobs() {
         if (!resp.ok) {
             const body = await resp.json();
             if (body) {
-                console.error(`Error occured while saving the config: ${body}`);
+                console.error(`Error occured during job scraping: ${body}`);
             }
         }
     
@@ -94,5 +94,45 @@ async function scrapeJobs() {
     catch {
         preloader.hide();
         return false;
+    }
+}
+
+async function startGrading() {
+    try {
+        const resp = await fetch(`/api/grade`, {
+            method: 'POST'
+        });
+    
+        if (!resp.ok) {
+            const body = await resp.json();
+            if (body) {
+                console.error(`Error occured while starting grading process: ${body}`);
+            }
+        }
+    
+        return resp.ok;
+    }
+    catch {
+        return false;
+    }
+}
+
+async function getGradingStatus() {
+    try {
+        const resp = await fetch(`/api/grade/status`, {
+            method: 'GET'
+        });
+    
+        const body = await resp.json();
+        if (!resp.ok) {
+            if (body) {
+                console.error(`Error occured while starting grading process: ${body}`);
+            }
+        }
+    
+        return body.status;
+    }
+    catch {
+        return null;
     }
 }
