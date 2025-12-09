@@ -2,7 +2,9 @@ package handlers
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"io"
 	"job-scraper/internal/data/models"
 	"job-scraper/internal/data/repositories"
 	"job-scraper/internal/services/llm"
@@ -25,8 +27,11 @@ func (h *handler) gradeAllHandler(c *gin.Context) {
 
 	requirements := req.Requirements
 	if requirements == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "missing 'requirements' body param"})
-		return
+		requirements = h.config.GradingProfile
+		if requirements == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "missing 'requirements' body param"})
+			return
+		}
 	}
 
 	if h.gradeState.IsGrading() {
@@ -49,7 +54,7 @@ func (h *handler) gradeAllHandler(c *gin.Context) {
 	}
 
 	//grading takes a long time, let's restrict grading to N jobs per request
-	const batchLen = 20
+	const batchLen = 50
 	var jobsBatch []*models.Job
 	if len(ungradedJobs) > batchLen {
 		jobsBatch = ungradedJobs[:batchLen]
@@ -90,15 +95,18 @@ func (h *handler) gradeJobHandler(c *gin.Context) {
 	}
 
 	var req GradeRequest
-	if err := c.BindJSON(&req); err != nil {
+	if err := c.ShouldBindJSON(&req); err != nil && !errors.Is(err, io.EOF) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	requirements := req.Requirements
 	if requirements == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "missing 'requirements' body param"})
-		return
+		requirements = h.config.GradingProfile
+		if requirements == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "missing 'requirements' body param"})
+			return
+		}
 	}
 
 	if h.gradeState.IsGrading() {

@@ -6,6 +6,7 @@ import (
 
 func (h *handler) SetupRoutes(r *gin.Engine) {
 	api := r.Group("/api")
+	api.Use(h.ConfigMiddleware())
 
 	api.POST("/scrape", h.scrapeHandler)
 
