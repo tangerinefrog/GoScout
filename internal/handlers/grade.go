@@ -148,7 +148,7 @@ func (h *handler) gradeJobHandler(c *gin.Context) {
 	c.Status(200)
 }
 
-func (h *handler) stopGradingHandler(c *gin.Context) {
+func (h *handler) gradingStopHandler(c *gin.Context) {
 	h.gradeState.Cancel()
 }
 

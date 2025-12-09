@@ -131,7 +131,7 @@ func (h *handler) jobsHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, result)
 }
 
-func (h *handler) updateJobHandler(c *gin.Context) {
+func (h *handler) jobUpdateHandler(c *gin.Context) {
 	jobId := c.Param("jobId")
 	if jobId == "" {
 		c.Status(http.StatusNotFound)
