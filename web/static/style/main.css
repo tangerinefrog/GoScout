@@ -76,3 +76,10 @@ body {
   resize: vertical;
   border-radius: 10px;
 }
+
+.grade-help {
+    cursor: pointer;
+    color: #ffffff;
+    margin-left: 4px;
+    font-weight: bold;
+}

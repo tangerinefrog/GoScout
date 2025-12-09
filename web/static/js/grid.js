@@ -31,7 +31,7 @@ async function getRows() {
             company: j.company,
             location: j.location,
             status: j.status,
-            grade: j.grade,
+            grade: { grade: j.grade, grade_reasoning: j.grade_reasoning},
             date_posted: dateFormatted,
             note: j.note,
         }
@@ -71,6 +71,8 @@ function defineColumns() {
         {
             field: 'grade',
             width: 80,
+            cellRenderer: gradeRenderer,
+            comparator: gradeSorter
         },
         {
             field: 'status',
@@ -98,6 +100,29 @@ function defineColumns() {
 function titleRenderer(cell) {
     return `<a href="${cell.value.url}" target="_blank">${cell.value.title}</a>`;
 }
+
+function gradeRenderer(cell) {
+    const value = cell.value.grade;
+    const cellDiv = document.createElement('div');
+    cellDiv.innerText = value; // Display the cell's value
+    cellDiv.style.cursor = 'pointer'; // Make it visually indicate clickability
+    cellDiv.style.textAlign = 'center'; // Make it visually indicate clickability
+
+    cellDiv.addEventListener('click', () => {
+        $('.js-grading-modal-text').text(cell.value.grade_reasoning);
+        MicroModal.show('grading-modal');
+    });
+
+    return cellDiv;
+}
+
+function gradeSorter(valueA, valueB) {
+    if (valueA.grade == valueB.grade) {
+        return 0;
+    }
+    
+    return (valueA.grade > valueB.grade) ? 1 : -1;
+} 
 
 function statusCellStyle(cell) {
     const style = {
