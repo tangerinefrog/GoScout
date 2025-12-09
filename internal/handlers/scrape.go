@@ -4,7 +4,6 @@ import (
 	"errors"
 	"io"
 	"job-scraper/internal/services/scraper"
-	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -55,6 +54,5 @@ func (h *handler) scrapeHandler(c *gin.Context) {
 		return
 	}
 
-	log.Printf("err: %v", err)
 	c.Status(http.StatusOK)
 }
