@@ -10,3 +10,16 @@ function showErrorToast(text) {
         },
     }).showToast();
 }
+
+function showSuccessToast(text) {
+    Toastify({
+        text: text,
+        duration: 2000,
+        gravity: "bottom",
+        position: "center",
+        style: {
+            background: "linear-gradient(to right, #2dad0dff, #05630bff)",
+            fontFamily: 'Arial, sans-serif',
+        },
+    }).showToast();
+}

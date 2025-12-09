@@ -1,4 +1,4 @@
-async function setupGrid() {
+async function renderGrid() {
     const rowData = await getRows();
     const theme = agGrid.themeAlpine.withPart(agGrid.colorSchemeDark);
 
@@ -12,7 +12,7 @@ async function setupGrid() {
         theme: theme,
     };
 
-    const gridElem = document.querySelector('#jobsGrid');
+    const gridElem = $('#jobsGrid')[0];
     agGrid.createGrid(gridElem, gridOptions);
 }
 
@@ -44,7 +44,7 @@ function defineColumns() {
             field: 'date_posted',
             headerName: 'Date',
             type: 'dateTime',
-            width: 120,
+            width: 130,
         },
         {
             field: 'title',
@@ -63,11 +63,11 @@ function defineColumns() {
         },
         {
             field: 'grade',
-            width: 70,
+            width: 80,
         },
         {
             field: 'status',
-            width: 90,
+            width: 100,
             editable: true,
             cellEditor: 'agSelectCellEditor',
             cellEditorParams: {
@@ -104,7 +104,7 @@ function statusCellStyle(cell) {
             break;
         case 'graded':
             style.color = '#000000';
-            style.backgroundColor = '#d7c909ff';
+            style.backgroundColor = '#efc004f0';
             style.borderRadius = '8px';
             break;
         case 'ignored':
@@ -145,5 +145,3 @@ async function onEdit(e) {
         showErrorToast('Edit failed due to server error');
     }
 }
-
-setupGrid();

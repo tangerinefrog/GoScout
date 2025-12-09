@@ -1,0 +1,42 @@
+renderGrid();
+
+MicroModal.init({
+    onShow: modal => {
+        if (modal.id === 'options-modal') {
+            fillConfigValues();
+        }
+    },
+});
+
+async function fillConfigValues() {
+    const config = await getConfig();
+    if (!config) {
+        return;
+    }
+
+    $('#grading-requirements-textarea').val(config.grading_profile);
+    $('#search-query-input').val(config.search_query);
+    $('#search-filter-input').val(config.search_filter);
+    $('#scraping-interval-input').val(config.search_period_hours);
+}
+
+async function onConfigSaveBtnClick() {
+    const gradingRequirements = $('#grading-requirements-textarea').val();
+    const searchQuery = $('#search-query-input').val();
+    const searchFilter = $('#search-filter-input').val();
+    const scrapingInterval = Number($('#scraping-interval-input').val());
+
+    const isSaved = await updateConfig({
+        gradingRequirements: gradingRequirements,
+        searchQuery: searchQuery,
+        searchFilter: searchFilter,
+        scrapingInterval: scrapingInterval
+    });
+
+    if (isSaved) {
+        showSuccessToast('Config saved successfully');
+        MicroModal.close('options-modal');
+    } else {
+        showErrorToast('Config save error');
+    }
+}

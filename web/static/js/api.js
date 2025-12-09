@@ -17,12 +17,12 @@ async function getJobs() {
         return [];
     }
 
-    return jobs;    
+    return jobs;
 }
 
 async function updateJob(id, field, value) {
     const reqBody = {
-        [field]: value 
+        [field]: value
     };
 
     const resp = await fetch(`/api/jobs/${id}`, {
@@ -32,4 +32,44 @@ async function updateJob(id, field, value) {
     });
 
     return resp.ok;
+}
+
+async function getConfig() {
+    const resp = await fetch(`/api/config`);
+    if (!resp.ok) {
+        showErrorToast('Config fetch failed');
+        return null;
+    }
+
+    const config = await resp.json();
+    return config;
+}
+
+async function updateConfig(config) {
+    const reqBody = {
+        grading_profile: config.gradingRequirements,
+        search_query: config.searchQuery,
+        search_filter: config.searchFilter,
+        search_period_hours: config.scrapingInterval,
+    };
+
+    try {
+        const resp = await fetch(`/api/config`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(reqBody),
+        });
+    
+        if (!resp.ok) {
+            const body = await resp.json();
+            if (body) {
+                console.error(`Error occured while saving the config: ${body}`);
+            }
+        }
+    
+        return resp.ok;
+    }
+    catch {
+        return false;
+    }
 }
