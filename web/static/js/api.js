@@ -73,3 +73,26 @@ async function updateConfig(config) {
         return false;
     }
 }
+
+async function scrapeJobs() {
+    preloader.show();
+    try {
+        const resp = await fetch(`/api/scrape`, {
+            method: 'POST'
+        });
+    
+        if (!resp.ok) {
+            const body = await resp.json();
+            if (body) {
+                console.error(`Error occured while saving the config: ${body}`);
+            }
+        }
+    
+        preloader.hide();
+        return resp.ok;
+    }
+    catch {
+        preloader.hide();
+        return false;
+    }
+}

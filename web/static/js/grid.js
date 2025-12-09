@@ -1,3 +1,5 @@
+let gridApi = null;
+
 async function renderGrid() {
     const rowData = await getRows();
     const theme = agGrid.themeAlpine.withPart(agGrid.colorSchemeDark);
@@ -13,7 +15,7 @@ async function renderGrid() {
     };
 
     const gridElem = $('#jobsGrid')[0];
-    agGrid.createGrid(gridElem, gridOptions);
+    gridApi = agGrid.createGrid(gridElem, gridOptions);
 }
 
 async function getRows() {
@@ -36,6 +38,11 @@ async function getRows() {
     });
 
     return rows;
+}
+
+async function refreshGrid() {
+    const rows = await getRows();
+    gridApi.setGridOption("rowData", rows);
 }
 
 function defineColumns() {

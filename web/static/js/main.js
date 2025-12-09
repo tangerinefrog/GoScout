@@ -37,6 +37,16 @@ async function onConfigSaveBtnClick() {
         showSuccessToast('Config saved successfully');
         MicroModal.close('options-modal');
     } else {
-        showErrorToast('Config save error');
+        showErrorToast('Config save failed');
+    }
+}
+
+async function onScrapeBtnClick() {
+    const ok = await scrapeJobs();
+    if (!ok) {
+        showErrorToast('Jobs scraping failed');
+    } else {
+        showSuccessToast('Jobs scraped successfully');
+        await refreshGrid();
     }
 }
