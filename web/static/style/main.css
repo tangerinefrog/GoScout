@@ -83,3 +83,12 @@ body {
     margin-left: 4px;
     font-weight: bold;
 }
+
+.ag-cell-focus,.ag-cell-no-focus{
+  border:none !important;
+}
+
+.no-border.ag-cell:focus{
+  border:none !important;
+  outline: none;
+}
