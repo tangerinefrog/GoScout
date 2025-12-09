@@ -104,9 +104,9 @@ function titleRenderer(cell) {
 function gradeRenderer(cell) {
     const value = cell.value.grade;
     const cellDiv = document.createElement('div');
-    cellDiv.innerText = value; // Display the cell's value
-    cellDiv.style.cursor = 'pointer'; // Make it visually indicate clickability
-    cellDiv.style.textAlign = 'center'; // Make it visually indicate clickability
+    cellDiv.innerText = value;
+    cellDiv.style.cursor = 'pointer';
+    cellDiv.style.textAlign = 'center';
 
     cellDiv.addEventListener('click', () => {
         $('.js-grading-modal-text').text(cell.value.grade_reasoning);
