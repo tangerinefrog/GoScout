@@ -14,17 +14,15 @@ import (
 type scrapingConfig struct {
 	searchQuery    string
 	filterKeywords []string
-	scrapingPeriod time.Duration
 }
 
-func ScrapeRecurring(ctx context.Context, db *data.DB) error {
-
+func ScrapeRecurring(ctx context.Context, period time.Duration, db *data.DB) error {
 	cfg, err := getConfig(ctx, db)
 	if err != nil {
 		return err
 	}
 
-	ticker := time.NewTicker(cfg.scrapingPeriod)
+	ticker := time.NewTicker(period)
 	defer ticker.Stop()
 
 	s := scraper.NewScraper(db)
@@ -34,7 +32,7 @@ func ScrapeRecurring(ctx context.Context, db *data.DB) error {
 
 		start := time.Now()
 		log.Println("Scraping process started")
-		_, err := s.ScrapeLinkedInJobs(tCtx, cfg.searchQuery, cfg.filterKeywords, cfg.scrapingPeriod)
+		_, err := s.ScrapeLinkedInJobs(tCtx, cfg.searchQuery, cfg.filterKeywords, period)
 		if err != nil {
 			log.Printf("recurrent scraping encountered an error: %v", err)
 			continue
@@ -74,11 +72,9 @@ func getConfig(ctx context.Context, db *data.DB) (scrapingConfig, error) {
 	}
 	searchFilter := strings.TrimSpace(config.SearchFilter)
 	filterKeywords := strings.Split(searchFilter, ",")
-	period := time.Duration(periodHours) * time.Hour
 
 	return scrapingConfig{
 		searchQuery:    searchQuery,
 		filterKeywords: filterKeywords,
-		scrapingPeriod: period,
 	}, nil
 }

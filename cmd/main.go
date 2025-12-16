@@ -8,6 +8,7 @@ import (
 	"job-scraper/internal/services/scheduler"
 	"log"
 	"os"
+	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -63,7 +64,8 @@ func initConfig(ctx context.Context, db *data.DB) error {
 }
 
 func startRecurrentJobs(ctx context.Context, db *data.DB) {
-	err := scheduler.ScrapeRecurring(ctx, db)
+	periodHour := 1 * time.Hour
+	err := scheduler.ScrapeRecurring(ctx, periodHour, db)
 	if err != nil {
 		log.Printf("Recurrent scraping error: %v", err)
 	}
