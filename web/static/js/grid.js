@@ -31,7 +31,7 @@ async function getRows() {
             company: j.company,
             location: j.location,
             status: j.status,
-            grade: { grade: j.grade, grade_reasoning: j.grade_reasoning},
+            grade: { grade: j.grade, grade_reasoning: j.grade_reasoning },
             date_posted: dateFormatted,
             note: j.note,
         }
@@ -56,7 +56,12 @@ function defineColumns() {
         {
             field: 'title',
             width: 300,
+            valueGetter: function (params) {
+                return params.data.title;
+            },
             cellRenderer: titleRenderer,
+            filter: true,            
+            filterParams: getTitleFilterParams(),
         },
         {
             field: 'company',
@@ -120,9 +125,9 @@ function gradeSorter(valueA, valueB) {
     if (valueA.grade == valueB.grade) {
         return 0;
     }
-    
+
     return (valueA.grade > valueB.grade) ? 1 : -1;
-} 
+}
 
 function statusCellStyle(cell) {
     const style = {
@@ -158,6 +163,21 @@ function getFilterParams() {
     return {
         closeOnApply: true,
         filterOptions: ['contains', 'notContains'],
+    };
+}
+
+function getTitleFilterParams() {
+    return {
+        closeOnApply: true,
+        filterOptions: [
+            {
+                displayKey: 'contains',
+                displayName: 'Contains',
+                predicate: ([filterValue], cellValue) => {
+                    return cellValue.title?.toLowerCase().includes(filterValue);
+                },
+            }
+        ],
     };
 }
 
