@@ -174,7 +174,7 @@ function getTitleFilterParams() {
                 displayKey: 'contains',
                 displayName: 'Contains',
                 predicate: ([filterValue], cellValue) => {
-                    return cellValue.title?.toLowerCase().includes(filterValue);
+                    return cellValue.title?.toLowerCase().includes(filterValue.toLowerCase());
                 },
             }
         ],
