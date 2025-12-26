@@ -34,6 +34,7 @@ func main() {
 		log.Fatalf("Config init error: %v", err)
 	}
 
+	gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
 	r.Use(cors.Default())
 
