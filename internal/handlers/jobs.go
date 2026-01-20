@@ -75,6 +75,7 @@ func (h *handler) jobsHandler(c *gin.Context) {
 	companyParam := strings.TrimSpace(c.Query("company"))
 	gradeParam := strings.TrimSpace(c.Query("grade_gt"))
 	dateParam := strings.TrimSpace(c.Query("date_gt"))
+	searchParam := strings.TrimSpace(c.Query("search"))
 
 	includeDescr := descrFlag == "true"
 	var statusFilter *models.JobStatus
@@ -100,8 +101,13 @@ func (h *handler) jobsHandler(c *gin.Context) {
 		dateFilter = &date
 	}
 
+	var searchFilter *string
+	if searchParam != "" {
+		searchFilter = &searchParam
+	}
+
 	jobsRepo := repositories.NewJobsRepo(h.db)
-	jobs, err := jobsRepo.List(c.Request.Context(), statusFilter, companyFilter, gradeFilter, dateFilter)
+	jobs, err := jobsRepo.List(c.Request.Context(), statusFilter, companyFilter, gradeFilter, dateFilter, searchFilter)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

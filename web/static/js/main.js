@@ -69,3 +69,7 @@ async function onGradeStatusBtnClick() {
         MicroModal.show('grade-status-modal');
     }
 }
+
+async function onSearchBtnClick() {
+    await refreshGrid();
+}

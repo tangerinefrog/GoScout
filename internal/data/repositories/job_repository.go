@@ -151,7 +151,7 @@ func (repo *JobsRepo) GetByID(ctx context.Context, id string) (*models.Job, erro
 }
 
 func (repo *JobsRepo) List(ctx context.Context,
-	status *models.JobStatus, company *string, grade *int, minDate *time.Time) ([]*models.Job, error) {
+	status *models.JobStatus, company *string, grade *int, minDate *time.Time, search *string) ([]*models.Job, error) {
 	query := `
 		SELECT
 			id,
@@ -173,6 +173,7 @@ func (repo *JobsRepo) List(ctx context.Context,
 			AND (? IS NULL OR ? = company) 
 			AND (? IS NULL OR grade > ?) 
 			AND (? IS NULL OR date_posted > ?)
+			AND (? IS NULL OR description LIKE '%' || ? || '%')
 		ORDER BY date_posted DESC;
 	`
 	var dateFilter *string
@@ -186,6 +187,7 @@ func (repo *JobsRepo) List(ctx context.Context,
 		company, company,
 		grade, grade,
 		dateFilter, dateFilter,
+		search, search,
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {

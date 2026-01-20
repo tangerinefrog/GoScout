@@ -6,7 +6,13 @@ const statuses = [
 ]
 
 async function getJobs() {
-    const resp = await fetch(`/api/jobs`);
+    const searchVal = $('#content-search-input').val();
+    let queryParam = '';
+    if (searchVal) {
+        queryParam = `?search=${searchVal}`
+    }
+
+    const resp = await fetch(`/api/jobs${queryParam}`);
     if (!resp.ok) {
         showErrorToast('Jobs fetch failed');
         return [];
