@@ -183,7 +183,6 @@ func (h *handler) jobUpdateHandler(c *gin.Context) {
 		Id:             job.Id,
 		Title:          job.Title,
 		Url:            job.Url,
-		Description:    job.Description,
 		DatePosted:     job.DatePosted,
 		Company:        job.Company,
 		Location:       job.Location,
@@ -195,4 +194,33 @@ func (h *handler) jobUpdateHandler(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, resp)
+}
+
+func (h *handler) jobArchiveHandler(c *gin.Context) {
+	jobId := c.Param("jobId")
+	if jobId == "" {
+		c.Status(http.StatusNotFound)
+		return
+	}
+
+	jobsRepo := repositories.NewJobsRepo(h.db)
+
+	job, err := jobsRepo.GetByID(c.Request.Context(), jobId)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if job == nil {
+		c.Status(http.StatusNotFound)
+		return
+	}
+
+	err = jobsRepo.Archive(c.Request.Context(), job.Id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.Status(http.StatusOK)
 }

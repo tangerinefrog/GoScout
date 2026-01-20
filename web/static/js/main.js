@@ -70,6 +70,14 @@ async function onGradeStatusBtnClick() {
     }
 }
 
-async function onSearchBtnClick() {
-    await refreshGrid();
-}
+$(() => {
+    $('#search-btn').click(async () => {
+        await refreshGrid();
+    });
+
+    $('#content-search-input').on('keypress', async (e) => {
+        if (e.key === 'Enter') {
+            await refreshGrid();
+        }
+    });
+});

@@ -168,7 +168,7 @@ func (repo *JobsRepo) List(ctx context.Context,
 			note
 		FROM jobs
 		WHERE 
-			is_invalid = 0
+			is_invalid = 0 AND is_archived = 0
 			AND (? IS NULL OR ? = status)
 			AND (? IS NULL OR ? = company) 
 			AND (? IS NULL OR grade > ?) 
@@ -226,4 +226,22 @@ func (repo *JobsRepo) List(ctx context.Context,
 	}
 
 	return jobs, nil
+}
+
+func (repo *JobsRepo) Archive(ctx context.Context, id string) error {
+	query := `
+		UPDATE jobs
+		SET 
+			is_archived = 1,
+			description = ''
+		WHERE id = ?
+	`
+
+	_, err := repo.db.ExecContext(ctx, query, id)
+
+	if err != nil {
+		return fmt.Errorf("job update failed: %w", err)
+	}
+
+	return nil
 }

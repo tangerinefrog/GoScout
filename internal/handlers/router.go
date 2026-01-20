@@ -13,6 +13,7 @@ func (h *handler) SetupRoutes(r *gin.Engine) {
 	api.GET("/jobs", h.jobsHandler)
 	api.GET("/jobs/:jobId", h.jobHandler)
 	api.PATCH("/jobs/:jobId", h.jobUpdateHandler)
+	api.DELETE("/jobs/:jobId", h.jobArchiveHandler)
 
 	api.POST("/grade", h.gradeAllHandler)
 	api.POST("/grade/:jobId", h.gradeJobHandler)

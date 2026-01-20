@@ -40,6 +40,14 @@ async function updateJob(id, field, value) {
     return resp.ok;
 }
 
+async function archiveJob(id) {
+    const resp = await fetch(`/api/jobs/${id}`, {
+        method: 'DELETE',
+    });
+
+    return resp.ok;
+}
+
 async function getConfig() {
     const resp = await fetch(`/api/config`);
     if (!resp.ok) {

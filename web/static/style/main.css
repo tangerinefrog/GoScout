@@ -56,15 +56,6 @@ body {
   box-shadow: rgba(73, 136, 5, 0.5) 0 3px 8px;
 }
 
-.button.button-grey {
-  background-image: linear-gradient(-180deg, #6c6c6c, #434343);
-  color: #ffffff;
-}
-
-.button.button-grey:hover {
-  box-shadow: rgba(129, 129, 129, 0.5) 0 3px 8px;
-}
-
 .form-group {
   margin: 20px 0;
 }
@@ -102,11 +93,29 @@ body {
   outline: none;
 }
 
-input[type="text"] {
-  border-radius: 10px;
-  border: 1px solid #ccc;
-  padding: 10px;
+.search-container {
+  position: relative;
+  display: inline-block;
   width: 250px;
-  height: 30px;
-  margin-right: 15px;
+}
+
+.search-container input {
+  width: 100%;
+  padding: 10px;
+  padding-right: 40px; /* Make space for the button */
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  box-sizing: border-box;
+}
+
+.search-container button {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  border: none;
+  background: transparent;
+  padding: 10px;
+  cursor: pointer;
+  border-radius: 0 10px 10px 0;
 }

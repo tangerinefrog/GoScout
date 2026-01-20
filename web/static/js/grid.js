@@ -48,6 +48,10 @@ async function refreshGrid() {
 function defineColumns() {
     return [
         {
+            width: 50,
+            cellRenderer: deleteButtonRenderer,
+        },
+        {
             field: 'date_posted',
             headerName: 'Date',
             type: 'dateTime',
@@ -100,6 +104,16 @@ function defineColumns() {
             onCellValueChanged: onEdit,
         },
     ];
+}
+
+function deleteButtonRenderer(cell) {
+    return `
+        <img 
+            src="static/icons/trash.svg" 
+            style="width:20px; height:20px; cursor:pointer;"
+            onClick=onDeleteButtonClick(${cell.data.id})
+        />
+    `;
 }
 
 function titleRenderer(cell) {
@@ -196,4 +210,9 @@ async function onEdit(e) {
         e.api.refreshCells();
         showErrorToast('Edit failed due to server error');
     }
+}
+
+async function onDeleteButtonClick(id) {
+    await archiveJob(id);
+    await refreshGrid();
 }

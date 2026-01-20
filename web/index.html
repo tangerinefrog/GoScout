@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jobs List - Job Scraper</title>
-    <link rel="icon" type="image/x-icon" href="static/images/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="static/icons/favicon.ico">
     <link rel="stylesheet" href="static/style/main.css">
     <link rel="stylesheet" type="text/css" href="static/plugins/toastify/toastify.min.css">
     <link rel="stylesheet" type="text/css" href="static/plugins/micromodal/micromodal.min.css">
@@ -25,8 +25,10 @@
         <button class="button button-green" onclick="onScrapeBtnClick()">Scrape</button>
         <button class="button button-green" onclick="onStartGradingBtnClick()">Grade All</button>
         <button class="button button-green" onclick="onGradeStatusBtnClick()">Grade Status</button>
-        <input type="text" name="Search" placeholder="Search..." id="content-search-input">
-        <button class="button button-grey" onclick="onSearchBtnClick()">Search</button>
+        <div class="search-container">
+            <input type="text" placeholder="Search..." id="content-search-input" onsubmit="onSearchBtnClick()">
+            <button id="search-btn">🔍</button>
+        </div>
     </div>
     <div id="jobsGrid"></div>
 
