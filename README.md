@@ -1,4 +1,4 @@
-# job-scraper
+# GoScout
 
 A job scraping and analyzing tool designed to simplify the process of searching for a suitable job post. It is used to scrape and collect job positions from linkedin.com and filter out irrelevant posts based on user preferences using Ollama AI.
 
