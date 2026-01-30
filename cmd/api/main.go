@@ -51,9 +51,7 @@ func run() error {
 		return fmt.Errorf("config init error: %w", err)
 	}
 
-	go startRecurrentJobs(ctx, db)
-
-	srv := configureServer(ctx, addr, db)
+	srv := configureServer(addr, db)
 
 	go func() {
 		log.Printf("server is listening on '%s'...\n", addr)
@@ -62,6 +60,8 @@ func run() error {
 			log.Fatalf("server error: %v", err)
 		}
 	}()
+
+	startBackgroundJobs(ctx, db)
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
@@ -78,7 +78,7 @@ func run() error {
 	return nil
 }
 
-func configureServer(ctx context.Context, addr string, db *data.DB) *http.Server {
+func configureServer(addr string, db *data.DB) *http.Server {
 	gin.SetMode(gin.ReleaseMode)
 
 	router := gin.New()
@@ -109,7 +109,7 @@ func initConfig(ctx context.Context, db *data.DB) error {
 	return nil
 }
 
-func startRecurrentJobs(ctx context.Context, db *data.DB) {
+func startBackgroundJobs(ctx context.Context, db *data.DB) {
 	periodHour := 1 * time.Hour
-	scheduler.ScrapeRecurring(ctx, periodHour, db)
+	go scheduler.ScrapeRecurring(ctx, periodHour, db)
 }
