@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"job-scraper/internal/data"
 	"job-scraper/internal/data/repositories"
 	"job-scraper/internal/handlers"
@@ -19,19 +20,26 @@ import (
 )
 
 func main() {
+	err := run()
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func run() error {
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatalf("Could not load .env file: %v", err)
+		return fmt.Errorf("could not load .env file: %w", err)
 	}
-	
+
 	addr := os.Getenv("SRV_ADDR")
 	if addr == "" {
-		log.Fatalf("Server address is not defined in the .env file")
+		return fmt.Errorf("server address is not defined in the .env file")
 	}
 
 	db, err := data.Init()
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	defer db.Close()
 
@@ -40,16 +48,18 @@ func main() {
 
 	err = initConfig(ctx, db)
 	if err != nil {
-		log.Fatalf("Config init error: %v", err)
+		return fmt.Errorf("config init error: %w", err)
 	}
+
+	go startRecurrentJobs(ctx, db)
 
 	srv := configureServer(ctx, addr, db)
 
 	go func() {
-		log.Printf("Server is listening on '%s'...\n", addr)
+		log.Printf("server is listening on '%s'...\n", addr)
 		err := srv.ListenAndServe()
 		if err != nil && err != http.ErrServerClosed {
-			log.Fatalf("Server error: %v", err)
+			log.Fatalf("server error: %v", err)
 		}
 	}()
 
@@ -57,28 +67,31 @@ func main() {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 
-	log.Println("Shutting down server...")
+	log.Println("shutting down server...")
 	cancel()
 
 	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer shutdownCancel()
 
 	srv.Shutdown(shutdownCtx)
+
+	return nil
 }
 
 func configureServer(ctx context.Context, addr string, db *data.DB) *http.Server {
 	gin.SetMode(gin.ReleaseMode)
-	r := gin.Default()
-	r.Use(cors.Default())
+
+	router := gin.New()
+	router.Use(gin.Logger())
+	router.Use(gin.Recovery())
+	router.Use(cors.Default())
 
 	h := handlers.NewHandler(db)
-	h.SetupRoutes(r)
-
-	go startRecurrentJobs(ctx, db)
+	h.SetupRoutes(router)
 
 	return &http.Server{
 		Addr:         addr,
-		Handler:      r,
+		Handler:      router,
 		ReadTimeout:  15 * time.Second,
 		WriteTimeout: 15 * time.Second,
 		IdleTimeout:  60 * time.Second,
