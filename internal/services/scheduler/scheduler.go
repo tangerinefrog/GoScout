@@ -2,7 +2,7 @@ package scheduler
 
 import (
 	"context"
-	"errors"
+	"fmt"
 	"job-scraper/internal/data"
 	"job-scraper/internal/data/repositories"
 	"job-scraper/internal/services/scraper"
@@ -16,41 +16,48 @@ type scrapingConfig struct {
 	filterKeywords []string
 }
 
-func ScrapeRecurring(ctx context.Context, period time.Duration, db *data.DB) error {
-	cfg, err := getConfig(ctx, db)
+func ScrapeRecurring(ctx context.Context, period time.Duration, db *data.DB) {
+	s := scraper.NewScraper(db)
+
+	err := runScrape(ctx, db, s, period)
 	if err != nil {
-		return err
+		log.Printf("Error occured during recurrent scraping: %v", err)
 	}
 
 	ticker := time.NewTicker(period)
 	defer ticker.Stop()
 
-	s := scraper.NewScraper(db)
-
 	for {
-		tCtx, cancel := context.WithTimeout(ctx, 10*time.Minute)
-
-		start := time.Now()
-		log.Println("Scraping process started")
-		_, err := s.ScrapeLinkedInJobs(tCtx, cfg.searchQuery, cfg.filterKeywords, period)
-		if err != nil {
-			log.Printf("recurrent scraping encountered an error: %v", err)
-			continue
-		}
-
-		log.Printf("Scraping process ended, run time: %v", time.Since(start))
-
-		cancel()
-
-		<-ticker.C
-
-		tmp, err := getConfig(ctx, db)
-		if err != nil {
-			log.Printf("Error occured while getting configuration for recurrent scraping: %v", err)
-		} else {
-			cfg = tmp
+		select {
+		case <-ticker.C:
+			err = runScrape(ctx, db, s, period)
+			if err != nil {
+				log.Printf("Error occured during recurrent scraping: %v", err)
+			}
+		case <-ctx.Done():
+			return
 		}
 	}
+}
+
+func runScrape(ctx context.Context, db *data.DB, s *scraper.Scraper, timeWindow time.Duration) error {
+	cfg, err := getConfig(ctx, db)
+	if err != nil {
+		return fmt.Errorf("failed to get config: %w", err)
+	}
+
+	scrapeCtx, cancel := context.WithTimeout(ctx, 10*time.Minute)
+	defer cancel()
+
+	start := time.Now()
+	log.Println("Scraping process started")
+	_, err = s.ScrapeLinkedInJobs(scrapeCtx, cfg.searchQuery, cfg.filterKeywords, timeWindow)
+	if err != nil {
+		return err
+	}
+
+	log.Printf("Scraping process ended, run time: %v", time.Since(start))
+	return nil
 }
 
 func getConfig(ctx context.Context, db *data.DB) (scrapingConfig, error) {
@@ -63,12 +70,12 @@ func getConfig(ctx context.Context, db *data.DB) (scrapingConfig, error) {
 
 	periodHours := config.SearchPeriodHours
 	if periodHours <= 0 {
-		return scrapingConfig{}, errors.New("search period value is set to an incorrect value in the config")
+		return scrapingConfig{}, fmt.Errorf("search period value is set to an incorrect value in the config")
 	}
 
 	searchQuery := strings.TrimSpace(config.SearchQuery)
 	if searchQuery == "" {
-		return scrapingConfig{}, errors.New("search query value is not set in the config")
+		return scrapingConfig{}, fmt.Errorf("search query value is not set in the config")
 	}
 	searchFilter := strings.TrimSpace(config.SearchFilter)
 	filterKeywords := strings.Split(searchFilter, ",")
