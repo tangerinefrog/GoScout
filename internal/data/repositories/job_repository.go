@@ -4,10 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"job-scraper/internal/data"
-	"job-scraper/internal/data/models"
-	"job-scraper/internal/data/sqltypes"
 	"time"
+
+	"github.com/tangerinefrog/GoScout/internal/data"
+	"github.com/tangerinefrog/GoScout/internal/data/models"
+	"github.com/tangerinefrog/GoScout/internal/data/sqltypes"
 )
 
 type JobsRepository struct {

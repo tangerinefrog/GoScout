@@ -5,9 +5,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"job-scraper/internal/data"
 	"os"
 	"strings"
+
+	"github.com/tangerinefrog/GoScout/internal/data"
 )
 
 type JobGrader struct {

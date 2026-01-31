@@ -1,12 +1,13 @@
 package handlers
 
 import (
-	"job-scraper/internal/data/models"
-	"job-scraper/internal/data/repositories"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/tangerinefrog/GoScout/internal/data/models"
+	"github.com/tangerinefrog/GoScout/internal/data/repositories"
 
 	"github.com/gin-gonic/gin"
 )

@@ -4,17 +4,18 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"job-scraper/internal/data"
-	"job-scraper/internal/data/models"
-	"job-scraper/internal/data/repositories"
-	"job-scraper/internal/services/fetcher"
-	"job-scraper/internal/services/filter"
-	"job-scraper/internal/services/parser"
 	"log"
 	"net/url"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/tangerinefrog/GoScout/internal/data"
+	"github.com/tangerinefrog/GoScout/internal/data/models"
+	"github.com/tangerinefrog/GoScout/internal/data/repositories"
+	"github.com/tangerinefrog/GoScout/internal/services/fetcher"
+	"github.com/tangerinefrog/GoScout/internal/services/filter"
+	"github.com/tangerinefrog/GoScout/internal/services/parser"
 )
 
 const linkedInBaseUrl string = "https://www.linkedin.com/jobs-guest/jobs/api"
@@ -36,7 +37,7 @@ func (s *Scraper) ScrapeLinkedInJobs(ctx context.Context, keyword string, filter
 	if err != nil {
 		return err
 	}
-	
+
 	jRepo := repositories.NewJobsRepo(s.db)
 	jobFilter := filter.NewJobFilter(jRepo, filterKeywords)
 

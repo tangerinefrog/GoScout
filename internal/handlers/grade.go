@@ -5,11 +5,12 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"job-scraper/internal/data/models"
-	"job-scraper/internal/data/repositories"
-	"job-scraper/internal/services/llm"
 	"net/http"
 	"time"
+
+	"github.com/tangerinefrog/GoScout/internal/data/models"
+	"github.com/tangerinefrog/GoScout/internal/data/repositories"
+	"github.com/tangerinefrog/GoScout/internal/services/llm"
 
 	"github.com/gin-gonic/gin"
 )

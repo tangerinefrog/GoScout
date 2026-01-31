@@ -1,4 +1,4 @@
-module job-scraper
+module github.com/tangerinefrog/GoScout
 
 go 1.25.4
 

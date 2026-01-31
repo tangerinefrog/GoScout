@@ -2,8 +2,9 @@ package handlers
 
 import (
 	"fmt"
-	"job-scraper/internal/data/repositories"
 	"net/http"
+
+	"github.com/tangerinefrog/GoScout/internal/data/repositories"
 
 	"github.com/gin-gonic/gin"
 )

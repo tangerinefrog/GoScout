@@ -3,8 +3,9 @@ package filter
 import (
 	"context"
 	"errors"
-	"job-scraper/internal/data/models"
 	"testing"
+
+	"github.com/tangerinefrog/GoScout/internal/data/models"
 )
 
 type mockJobRepo struct {

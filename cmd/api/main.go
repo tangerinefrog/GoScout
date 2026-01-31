@@ -3,16 +3,17 @@ package main
 import (
 	"context"
 	"fmt"
-	"job-scraper/internal/data"
-	"job-scraper/internal/data/repositories"
-	"job-scraper/internal/handlers"
-	"job-scraper/internal/services/scheduler"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/tangerinefrog/GoScout/internal/data"
+	"github.com/tangerinefrog/GoScout/internal/data/repositories"
+	"github.com/tangerinefrog/GoScout/internal/handlers"
+	"github.com/tangerinefrog/GoScout/internal/services/scheduler"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"

@@ -1,9 +1,9 @@
 package handlers
 
 import (
-	"job-scraper/internal/data"
-	"job-scraper/internal/data/models"
-	"job-scraper/internal/state"
+	"github.com/tangerinefrog/GoScout/internal/data"
+	"github.com/tangerinefrog/GoScout/internal/data/models"
+	"github.com/tangerinefrog/GoScout/internal/state"
 )
 
 type handler struct {

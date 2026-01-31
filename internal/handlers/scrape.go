@@ -3,10 +3,11 @@ package handlers
 import (
 	"errors"
 	"io"
-	"job-scraper/internal/services/scraper"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/tangerinefrog/GoScout/internal/services/scraper"
 
 	"github.com/gin-gonic/gin"
 )

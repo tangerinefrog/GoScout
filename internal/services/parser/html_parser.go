@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"job-scraper/internal/data/models"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/tangerinefrog/GoScout/internal/data/models"
 
 	"github.com/PuerkitoBio/goquery"
 )

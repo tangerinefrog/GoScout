@@ -3,12 +3,13 @@ package scheduler
 import (
 	"context"
 	"fmt"
-	"job-scraper/internal/data"
-	"job-scraper/internal/data/repositories"
-	"job-scraper/internal/services/scraper"
 	"log"
 	"strings"
 	"time"
+
+	"github.com/tangerinefrog/GoScout/internal/data"
+	"github.com/tangerinefrog/GoScout/internal/data/repositories"
+	"github.com/tangerinefrog/GoScout/internal/services/scraper"
 )
 
 type scrapingConfig struct {

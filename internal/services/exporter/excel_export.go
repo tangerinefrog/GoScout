@@ -3,10 +3,11 @@ package exporter
 import (
 	"context"
 	"fmt"
-	"job-scraper/internal/data"
-	"job-scraper/internal/data/repositories"
 	"os"
 	"strconv"
+
+	"github.com/tangerinefrog/GoScout/internal/data"
+	"github.com/tangerinefrog/GoScout/internal/data/repositories"
 
 	"github.com/xuri/excelize/v2"
 )

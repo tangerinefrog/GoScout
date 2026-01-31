@@ -1,9 +1,10 @@
 package handlers
 
 import (
-	"job-scraper/internal/services/exporter"
 	"net/http"
 	"os"
+
+	"github.com/tangerinefrog/GoScout/internal/services/exporter"
 
 	"github.com/gin-gonic/gin"
 )

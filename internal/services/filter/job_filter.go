@@ -2,9 +2,10 @@ package filter
 
 import (
 	"context"
-	"job-scraper/internal/data/models"
 	"log"
 	"strings"
+
+	"github.com/tangerinefrog/GoScout/internal/data/models"
 )
 
 type jobFilter struct {
