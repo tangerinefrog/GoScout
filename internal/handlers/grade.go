@@ -161,7 +161,7 @@ func (h *handler) gradingStopHandler(c *gin.Context) {
 }
 
 func gradeJob(ctx context.Context, job *models.Job, requirements string, grader *llm.JobGrader,
-	jobsRepo *repositories.JobsRepo) error {
+	jobsRepo *repositories.JobsRepository) error {
 	res, err := grader.Grade(ctx, requirements, job.Description)
 	if err != nil {
 		return fmt.Errorf("error during grading job '%s': %w", job.Id, err)

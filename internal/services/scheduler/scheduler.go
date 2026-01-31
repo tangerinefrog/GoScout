@@ -51,7 +51,7 @@ func runScrape(ctx context.Context, db *data.DB, s *scraper.Scraper, timeWindow 
 
 	start := time.Now()
 	log.Println("Scraping process started")
-	_, err = s.ScrapeLinkedInJobs(scrapeCtx, cfg.searchQuery, cfg.filterKeywords, timeWindow)
+	err = s.ScrapeLinkedInJobs(scrapeCtx, cfg.searchQuery, cfg.filterKeywords, timeWindow)
 	if err != nil {
 		return err
 	}

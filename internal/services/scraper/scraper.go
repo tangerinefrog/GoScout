@@ -8,8 +8,8 @@ import (
 	"job-scraper/internal/data/models"
 	"job-scraper/internal/data/repositories"
 	"job-scraper/internal/services/fetcher"
+	"job-scraper/internal/services/filter"
 	"job-scraper/internal/services/parser"
-	"job-scraper/internal/services/validator"
 	"log"
 	"net/url"
 	"strconv"
@@ -29,44 +29,36 @@ func NewScraper(db *data.DB) *Scraper {
 	}
 }
 
-func (s *Scraper) ScrapeLinkedInJobs(ctx context.Context, keyword string, filterKeywords []string, timeWindow time.Duration) ([]models.Job, error) {
+func (s *Scraper) ScrapeLinkedInJobs(ctx context.Context, keyword string, filterKeywords []string, timeWindow time.Duration) error {
 	keyword = strings.TrimSpace(keyword)
 
-	jobIds, err := getJobsFromSearch(ctx, keyword, timeWindow)
+	jobIds, err := searchJobs(ctx, keyword, timeWindow)
 	if err != nil {
-		return nil, err
+		return err
 	}
-
-	validator := validator.NewKeywordValidator()
+	
 	jRepo := repositories.NewJobsRepo(s.db)
-	res := make([]models.Job, 0, len(jobIds))
+	jobFilter := filter.NewJobFilter(jRepo, filterKeywords)
+
 	for _, jobId := range jobIds {
 		dbJob, err := jRepo.GetByID(ctx, jobId)
 		if err != nil {
-			log.Printf("could not get job with id '%s' from database: %v\n", jobId, err)
+			log.Printf("Error while getting a job with id '%s' from database: %v\n", jobId, err)
 			continue
 		}
 		if dbJob != nil {
-			res = append(res, *dbJob)
 			continue
 		}
 
-		jobPageUrl := fmt.Sprintf("%s/jobPosting/%s", linkedInBaseUrl, jobId)
-		jobPostingContent, err := fetcher.FetchWithRetry(ctx, jobPageUrl, 5)
-
+		job, err := scrapeJob(ctx, jobId)
 		if err != nil {
-			log.Printf("could not get job with id '%s' from '%s': %v\n", jobId, jobPageUrl, err)
+			log.Printf("Error while fetching a job: %v", err)
 			continue
 		}
 
-		job, err := parser.ParseJob(jobPostingContent, jobId)
-		if err != nil {
-			log.Printf("could not parse job with id '%s': %v\n", jobId, err)
-			continue
-		}
 		job.Status = models.JobStatusCreated
 
-		valid := validator.ValidateKeywords(filterKeywords, job.Description+job.Title)
+		valid := jobFilter.Filter(ctx, job)
 		if !valid {
 			job.IsInvalid = true
 			job.Description = ""
@@ -74,17 +66,31 @@ func (s *Scraper) ScrapeLinkedInJobs(ctx context.Context, keyword string, filter
 
 		err = jRepo.Add(ctx, &job)
 		if err != nil {
-			log.Printf("could not save job with id '%s' from '%s' to database: %v\n", jobId, jobPageUrl, err)
+			log.Printf("Could not save job with id '%s' to database: %v\n", jobId, err)
 			continue
 		}
-
-		res = append(res, job)
 	}
 
-	return res, nil
+	return nil
 }
 
-func getJobsFromSearch(ctx context.Context, keywords string, timeWindow time.Duration) ([]string, error) {
+func scrapeJob(ctx context.Context, id string) (models.Job, error) {
+	jobPageUrl := fmt.Sprintf("%s/jobPosting/%s", linkedInBaseUrl, id)
+	jobPostingContent, err := fetcher.FetchWithRetry(ctx, jobPageUrl, 5)
+
+	if err != nil {
+		return models.Job{}, fmt.Errorf("could not get job with id '%s' from '%s': %w", id, jobPageUrl, err)
+	}
+
+	job, err := parser.ParseJob(jobPostingContent, id)
+	if err != nil {
+		return models.Job{}, fmt.Errorf("could not parse job with id '%s': %w", id, err)
+	}
+
+	return job, nil
+}
+
+func searchJobs(ctx context.Context, keywords string, timeWindow time.Duration) ([]string, error) {
 	var ids []string
 
 	page := 1

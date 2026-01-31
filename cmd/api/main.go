@@ -54,10 +54,10 @@ func run() error {
 	srv := configureServer(addr, db)
 
 	go func() {
-		log.Printf("server is listening on '%s'...\n", addr)
+		log.Printf("Server is listening on '%s'...\n", addr)
 		err := srv.ListenAndServe()
 		if err != nil && err != http.ErrServerClosed {
-			log.Fatalf("server error: %v", err)
+			log.Fatalf("Server error: %v", err)
 		}
 	}()
 
@@ -67,7 +67,7 @@ func run() error {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 
-	log.Println("shutting down server...")
+	log.Println("Shutting down server...")
 	cancel()
 
 	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)

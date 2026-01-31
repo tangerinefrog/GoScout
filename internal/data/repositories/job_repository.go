@@ -10,17 +10,17 @@ import (
 	"time"
 )
 
-type JobsRepo struct {
+type JobsRepository struct {
 	db *data.DB
 }
 
-func NewJobsRepo(db *data.DB) *JobsRepo {
-	return &JobsRepo{
+func NewJobsRepo(db *data.DB) *JobsRepository {
+	return &JobsRepository{
 		db: db,
 	}
 }
 
-func (repo *JobsRepo) Add(ctx context.Context, job *models.Job) error {
+func (repo *JobsRepository) Add(ctx context.Context, job *models.Job) error {
 	query := `
 		INSERT INTO jobs
 		(
@@ -63,7 +63,7 @@ func (repo *JobsRepo) Add(ctx context.Context, job *models.Job) error {
 	return nil
 }
 
-func (repo *JobsRepo) Update(ctx context.Context, job *models.Job) error {
+func (repo *JobsRepository) Update(ctx context.Context, job *models.Job) error {
 	query := `
 		UPDATE jobs
 		SET 
@@ -89,7 +89,7 @@ func (repo *JobsRepo) Update(ctx context.Context, job *models.Job) error {
 	return nil
 }
 
-func (repo *JobsRepo) GetByID(ctx context.Context, id string) (*models.Job, error) {
+func (repo *JobsRepository) GetByID(ctx context.Context, id string) (*models.Job, error) {
 	query := `
 		SELECT
 			id,
@@ -106,7 +106,8 @@ func (repo *JobsRepo) GetByID(ctx context.Context, id string) (*models.Job, erro
 			note,
 			is_invalid
 		FROM jobs
-		WHERE id = ?;
+		WHERE id = ?
+		LIMIT 1;;
 	`
 
 	rows, err := repo.db.QueryContext(ctx, query, id)
@@ -150,7 +151,43 @@ func (repo *JobsRepo) GetByID(ctx context.Context, id string) (*models.Job, erro
 	return job, nil
 }
 
-func (repo *JobsRepo) List(ctx context.Context,
+func (repo *JobsRepository) GetByTitleAndCompany(ctx context.Context, title, company string) (*models.Job, error) {
+	query := `
+		SELECT
+			id,
+			company
+		FROM jobs
+		WHERE title = ? AND company = ?
+		LIMIT 1;
+	`
+
+	rows, err := repo.db.QueryContext(ctx, query, title, company)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("jobs list query failed: %w", err)
+	}
+
+	defer rows.Close()
+
+	hasJob := rows.Next()
+	if !hasJob {
+		return nil, nil
+	}
+	job := &models.Job{}
+	err = rows.Scan(
+		&job.Id,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to scan job row: %w", err)
+	}
+
+	return job, nil
+}
+
+func (repo *JobsRepository) List(ctx context.Context,
 	status *models.JobStatus, company *string, grade *int, minDate *time.Time, search *string) ([]*models.Job, error) {
 	query := `
 		SELECT
@@ -228,7 +265,7 @@ func (repo *JobsRepo) List(ctx context.Context,
 	return jobs, nil
 }
 
-func (repo *JobsRepo) Archive(ctx context.Context, id string) error {
+func (repo *JobsRepository) Archive(ctx context.Context, id string) error {
 	query := `
 		UPDATE jobs
 		SET 
