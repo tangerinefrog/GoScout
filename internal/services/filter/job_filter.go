@@ -8,23 +8,23 @@ import (
 	"github.com/tangerinefrog/GoScout/internal/data/models"
 )
 
-type jobFilter struct {
-	jRepo    JobsRepository
+type JobFilter struct {
+	jRepo    jobsRepository
 	keywords []string
 }
 
-type JobsRepository interface {
+type jobsRepository interface {
 	GetByTitleAndCompany(ctx context.Context, title, company string) (*models.Job, error)
 }
 
-func NewJobFilter(jRepo JobsRepository, keywords []string) *jobFilter {
-	return &jobFilter{
+func NewJobFilter(jRepo jobsRepository, keywords []string) *JobFilter {
+	return &JobFilter{
 		jRepo:    jRepo,
 		keywords: keywords,
 	}
 }
 
-func (f *jobFilter) Filter(ctx context.Context, j models.Job) bool {
+func (f *JobFilter) Filter(ctx context.Context, j models.Job) bool {
 	if !containsKeywords(f.keywords, j.Description+j.Title) {
 		return false
 	}
@@ -51,7 +51,7 @@ func containsKeywords(keywords []string, text string) bool {
 	return false
 }
 
-func isDuplicate(ctx context.Context, title, company string, jRepo JobsRepository) bool {
+func isDuplicate(ctx context.Context, title, company string, jRepo jobsRepository) bool {
 	job, err := jRepo.GetByTitleAndCompany(ctx, title, company)
 	if err != nil {
 		log.Printf("Error during getting a job by title: %v", err)

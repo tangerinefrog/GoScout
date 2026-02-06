@@ -155,8 +155,7 @@ func (repo *JobsRepository) GetByID(ctx context.Context, id string) (*models.Job
 func (repo *JobsRepository) GetByTitleAndCompany(ctx context.Context, title, company string) (*models.Job, error) {
 	query := `
 		SELECT
-			id,
-			company
+			id
 		FROM jobs
 		WHERE title = ? AND company = ?
 		LIMIT 1;

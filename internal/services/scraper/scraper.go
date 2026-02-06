@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/tangerinefrog/GoScout/internal/data"
@@ -38,41 +39,79 @@ func (s *Scraper) ScrapeLinkedInJobs(ctx context.Context, keyword string, filter
 		return err
 	}
 
+
+	jobsCh := make(chan string)
+	go func() {
+		for _, jobId := range jobIds {
+			select {
+			case jobsCh <- jobId:
+			case <-ctx.Done():
+				return
+			}
+		}
+
+		close(jobsCh)
+	}()
+
 	jRepo := repositories.NewJobsRepo(s.db)
 	jobFilter := filter.NewJobFilter(jRepo, filterKeywords)
+	numWorkers := 3
 
-	for _, jobId := range jobIds {
-		dbJob, err := jRepo.GetByID(ctx, jobId)
-		if err != nil {
-			log.Printf("Error while getting a job with id '%s' from database: %v\n", jobId, err)
-			continue
-		}
-		if dbJob != nil {
-			continue
-		}
-
-		job, err := scrapeJob(ctx, jobId)
-		if err != nil {
-			log.Printf("Error while fetching a job: %v", err)
-			continue
-		}
-
-		job.Status = models.JobStatusCreated
-
-		valid := jobFilter.Filter(ctx, job)
-		if !valid {
-			job.IsInvalid = true
-			job.Description = ""
-		}
-
-		err = jRepo.Add(ctx, &job)
-		if err != nil {
-			log.Printf("Could not save job with id '%s' to database: %v\n", jobId, err)
-			continue
-		}
-	}
+	workerPool(ctx, jobsCh, numWorkers, jRepo, *jobFilter)
 
 	return nil
+}
+
+func workerPool(ctx context.Context, jobsCh <-chan string, numWorkers int, r *repositories.JobsRepository, f filter.JobFilter) {
+	wg := sync.WaitGroup{}
+	for range numWorkers {
+		wg.Go(func() {
+			for {
+				select {
+				case id, ok := <-jobsCh:
+					if !ok {
+						return
+					}
+					scrapeAndSaveJob(ctx, id, r, f)
+				case <-ctx.Done():
+					return
+				}
+			}
+		})
+	}
+
+	wg.Wait()
+}
+
+func scrapeAndSaveJob(ctx context.Context, id string, r *repositories.JobsRepository, f filter.JobFilter) {
+	dbJob, err := r.GetByID(ctx, id)
+	if err != nil {
+		log.Printf("Error while getting a job with id '%s' from database: %v\n", id, err)
+		return
+	}
+	if dbJob != nil {
+		return
+	}
+
+	job, err := scrapeJob(ctx, id)
+	if err != nil {
+		log.Printf("Error while fetching a job: %v", err)
+		return
+	}
+
+	job.Status = models.JobStatusCreated
+
+	valid := f.Filter(ctx, job)
+	if !valid {
+		job.IsInvalid = true
+		job.Description = ""
+	}
+
+	err = r.Add(ctx, &job)
+	if err != nil {
+		log.Printf("Could not save job with id '%s' to database: %v\n", id, err)
+		return
+	}
 }
 
 func scrapeJob(ctx context.Context, id string) (models.Job, error) {
