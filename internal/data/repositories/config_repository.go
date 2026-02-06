@@ -9,17 +9,17 @@ import (
 	"github.com/tangerinefrog/GoScout/internal/data/models"
 )
 
-type ConfigRepo struct {
+type ConfigRepository struct {
 	db *data.DB
 }
 
-func NewConfigRepo(db *data.DB) *ConfigRepo {
-	return &ConfigRepo{
+func NewConfigRepository(db *data.DB) *ConfigRepository {
+	return &ConfigRepository{
 		db: db,
 	}
 }
 
-func (repo *ConfigRepo) Init(ctx context.Context) error {
+func (repo *ConfigRepository) Init(ctx context.Context) error {
 	selectQuery := `
 		SELECT 1 FROM config WHERE id = 1;
 	`
@@ -63,7 +63,7 @@ func (repo *ConfigRepo) Init(ctx context.Context) error {
 	return nil
 }
 
-func (repo *ConfigRepo) Update(ctx context.Context, config *models.Config) error {
+func (repo *ConfigRepository) Update(ctx context.Context, config *models.Config) error {
 	query := `
 		UPDATE config
 		SET 
@@ -88,7 +88,7 @@ func (repo *ConfigRepo) Update(ctx context.Context, config *models.Config) error
 	return nil
 }
 
-func (repo *ConfigRepo) Get(ctx context.Context) (*models.Config, error) {
+func (repo *ConfigRepository) Get(ctx context.Context) (*models.Config, error) {
 	query := `
 		SELECT
 			search_query, 

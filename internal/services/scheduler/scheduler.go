@@ -7,7 +7,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/tangerinefrog/GoScout/internal/data"
 	"github.com/tangerinefrog/GoScout/internal/data/repositories"
 	"github.com/tangerinefrog/GoScout/internal/services/scraper"
 )
@@ -17,10 +16,10 @@ type scrapingConfig struct {
 	filterKeywords []string
 }
 
-func ScrapeRecurring(ctx context.Context, period time.Duration, db *data.DB) {
-	s := scraper.NewScraper(db)
+func ScrapeRecurring(ctx context.Context, period time.Duration, jobsRepository *repositories.JobsRepository, configRepository *repositories.ConfigRepository) {
+	s := scraper.NewScraper(jobsRepository)
 
-	err := runScrape(ctx, db, s, period)
+	err := runScrape(ctx, configRepository, s, period)
 	if err != nil {
 		log.Printf("Error occured during recurrent scraping: %v", err)
 	}
@@ -31,7 +30,7 @@ func ScrapeRecurring(ctx context.Context, period time.Duration, db *data.DB) {
 	for {
 		select {
 		case <-ticker.C:
-			err = runScrape(ctx, db, s, period)
+			err = runScrape(ctx, configRepository, s, period)
 			if err != nil {
 				log.Printf("Error occured during recurrent scraping: %v", err)
 			}
@@ -41,8 +40,8 @@ func ScrapeRecurring(ctx context.Context, period time.Duration, db *data.DB) {
 	}
 }
 
-func runScrape(ctx context.Context, db *data.DB, s *scraper.Scraper, timeWindow time.Duration) error {
-	cfg, err := getConfig(ctx, db)
+func runScrape(ctx context.Context, configRepository *repositories.ConfigRepository, s *scraper.Scraper, timeWindow time.Duration) error {
+	cfg, err := getConfig(ctx, configRepository)
 	if err != nil {
 		return fmt.Errorf("failed to get config: %w", err)
 	}
@@ -61,10 +60,9 @@ func runScrape(ctx context.Context, db *data.DB, s *scraper.Scraper, timeWindow 
 	return nil
 }
 
-func getConfig(ctx context.Context, db *data.DB) (scrapingConfig, error) {
-	configRepo := repositories.NewConfigRepo(db)
+func getConfig(ctx context.Context, configRepository *repositories.ConfigRepository) (scrapingConfig, error) {
 
-	config, err := configRepo.Get(ctx)
+	config, err := configRepository.Get(ctx)
 	if err != nil {
 		return scrapingConfig{}, err
 	}

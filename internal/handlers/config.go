@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/tangerinefrog/GoScout/internal/data/models"
-	"github.com/tangerinefrog/GoScout/internal/data/repositories"
 
 	"github.com/gin-gonic/gin"
 )
@@ -17,8 +16,7 @@ type Config struct {
 }
 
 func (h *handler) configHandler(c *gin.Context) {
-	configRepo := repositories.NewConfigRepo(h.db)
-	config, err := configRepo.Get(c.Request.Context())
+	config, err := h.configRepository.Get(c.Request.Context())
 	if err != nil || config == nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -48,8 +46,7 @@ func (h *handler) configUpdateHandler(c *gin.Context) {
 		GradingProfile:    req.GradingProfile,
 	}
 
-	configRepo := repositories.NewConfigRepo(h.db)
-	err := configRepo.Update(c.Request.Context(), &config)
+	err := h.configRepository.Update(c.Request.Context(), &config)
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

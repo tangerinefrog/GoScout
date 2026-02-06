@@ -44,10 +44,8 @@ func (h *handler) gradeAllHandler(c *gin.Context) {
 
 	h.gradeState.Lock()
 
-	jobsRepo := repositories.NewJobsRepo(h.db)
-
 	status := models.JobStatusCreated
-	ungradedJobs, err := jobsRepo.List(c.Request.Context(), &status, nil, nil, nil, nil)
+	ungradedJobs, err := h.jobsRepository.List(c.Request.Context(), &status, nil, nil, nil, nil)
 	if err != nil {
 		h.gradeState.Unlock()
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -63,7 +61,7 @@ func (h *handler) gradeAllHandler(c *gin.Context) {
 		jobsBatch = ungradedJobs
 	}
 
-	grader := llm.NewJobGrader(h.db)
+	grader := llm.NewJobGrader()
 
 	go func() {
 		defer h.gradeState.Unlock()
@@ -71,7 +69,7 @@ func (h *handler) gradeAllHandler(c *gin.Context) {
 		for i, job := range jobsBatch {
 			status := fmt.Sprintf("grading job '%s' (%d of %d)", job.Id, i+1, len(jobsBatch))
 			h.gradeState.SetStatus(status)
-			err := gradeJob(h.gradeState.Ctx, job, requirements, grader, jobsRepo)
+			err := gradeJob(h.gradeState.Ctx, job, requirements, grader, h.jobsRepository)
 			if err != nil {
 				h.gradeState.SetStatus(err.Error())
 				return
@@ -119,8 +117,7 @@ func (h *handler) gradeJobHandler(c *gin.Context) {
 
 	h.gradeState.Lock()
 
-	jobsRepo := repositories.NewJobsRepo(h.db)
-	job, err := jobsRepo.GetByID(c.Request.Context(), jobId)
+	job, err := h.jobsRepository.GetByID(c.Request.Context(), jobId)
 	if err != nil {
 		h.gradeState.Unlock()
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -133,7 +130,7 @@ func (h *handler) gradeJobHandler(c *gin.Context) {
 		return
 	}
 
-	grader := llm.NewJobGrader(h.db)
+	grader := llm.NewJobGrader()
 
 	go func() {
 		defer h.gradeState.Unlock()
@@ -141,7 +138,7 @@ func (h *handler) gradeJobHandler(c *gin.Context) {
 		status := fmt.Sprintf("grading job '%s' (1 of 1)", job.Id)
 		h.gradeState.SetStatus(status)
 
-		err := gradeJob(h.gradeState.Ctx, job, requirements, grader, jobsRepo)
+		err := gradeJob(h.gradeState.Ctx, job, requirements, grader, h.jobsRepository)
 		if err != nil {
 			h.gradeState.SetStatus(err.Error())
 			return

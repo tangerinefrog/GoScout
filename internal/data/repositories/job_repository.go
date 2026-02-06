@@ -15,7 +15,7 @@ type JobsRepository struct {
 	db *data.DB
 }
 
-func NewJobsRepo(db *data.DB) *JobsRepository {
+func NewJobsRepository(db *data.DB) *JobsRepository {
 	return &JobsRepository{
 		db: db,
 	}

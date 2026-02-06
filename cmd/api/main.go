@@ -47,12 +47,15 @@ func run() error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	err = initConfig(ctx, db)
+	jobsRepository := repositories.NewJobsRepository(db)
+	configRepository := repositories.NewConfigRepository(db)
+
+	err = initConfig(ctx, configRepository)
 	if err != nil {
 		return fmt.Errorf("config init error: %w", err)
 	}
 
-	srv := configureServer(addr, db)
+	srv := configureServer(addr, jobsRepository, configRepository)
 
 	go func() {
 		log.Printf("Server is listening on '%s'...\n", addr)
@@ -62,7 +65,7 @@ func run() error {
 		}
 	}()
 
-	startBackgroundJobs(ctx, db)
+	startBackgroundJobs(ctx, jobsRepository, configRepository)
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
@@ -79,7 +82,7 @@ func run() error {
 	return nil
 }
 
-func configureServer(addr string, db *data.DB) *http.Server {
+func configureServer(addr string, jobsRepository *repositories.JobsRepository, configRepository *repositories.ConfigRepository) *http.Server {
 	gin.SetMode(gin.ReleaseMode)
 
 	router := gin.New()
@@ -87,7 +90,7 @@ func configureServer(addr string, db *data.DB) *http.Server {
 	router.Use(gin.Recovery())
 	router.Use(cors.Default())
 
-	h := handlers.NewHandler(db)
+	h := handlers.NewHandler(jobsRepository, configRepository)
 	h.SetupRoutes(router)
 
 	return &http.Server{
@@ -99,9 +102,8 @@ func configureServer(addr string, db *data.DB) *http.Server {
 	}
 }
 
-func initConfig(ctx context.Context, db *data.DB) error {
-	configRepo := repositories.NewConfigRepo(db)
-	err := configRepo.Init(ctx)
+func initConfig(ctx context.Context, configRepository *repositories.ConfigRepository) error {
+	err := configRepository.Init(ctx)
 
 	if err != nil {
 		return err
@@ -110,7 +112,7 @@ func initConfig(ctx context.Context, db *data.DB) error {
 	return nil
 }
 
-func startBackgroundJobs(ctx context.Context, db *data.DB) {
+func startBackgroundJobs(ctx context.Context, jobsRepository *repositories.JobsRepository, configRepository *repositories.ConfigRepository) {
 	periodHour := 1 * time.Hour
-	go scheduler.ScrapeRecurring(ctx, periodHour, db)
+	go scheduler.ScrapeRecurring(ctx, periodHour, jobsRepository, configRepository)
 }

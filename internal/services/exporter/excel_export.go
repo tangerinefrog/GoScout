@@ -6,27 +6,25 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/tangerinefrog/GoScout/internal/data"
 	"github.com/tangerinefrog/GoScout/internal/data/repositories"
 
 	"github.com/xuri/excelize/v2"
 )
 
 type exporter struct {
-	db *data.DB
+	jobsRepository *repositories.JobsRepository
 }
 
 const filename = "jobs.xlsx"
 
-func NewExcelExporter(db *data.DB) *exporter {
+func NewExcelExporter(jobsRepository *repositories.JobsRepository) *exporter {
 	return &exporter{
-		db: db,
+		jobsRepository: jobsRepository,
 	}
 }
 
 func (e *exporter) ExportToExcel(ctx context.Context) (string, error) {
-	jobsRepo := repositories.NewJobsRepo(e.db)
-	jobs, err := jobsRepo.List(ctx, nil, nil, nil, nil, nil)
+	jobs, err := e.jobsRepository.List(ctx, nil, nil, nil, nil, nil)
 	if err != nil {
 		return "", err
 	}

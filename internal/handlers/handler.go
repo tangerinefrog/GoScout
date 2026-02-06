@@ -1,20 +1,22 @@
 package handlers
 
 import (
-	"github.com/tangerinefrog/GoScout/internal/data"
 	"github.com/tangerinefrog/GoScout/internal/data/models"
+	"github.com/tangerinefrog/GoScout/internal/data/repositories"
 	"github.com/tangerinefrog/GoScout/internal/state"
 )
 
 type handler struct {
-	db         *data.DB
-	gradeState *state.GradingState
-	config     *models.Config
+	jobsRepository   *repositories.JobsRepository
+	configRepository *repositories.ConfigRepository
+	gradeState       *state.GradingState
+	config           *models.Config
 }
 
-func NewHandler(db *data.DB) *handler {
+func NewHandler(jobsRepository *repositories.JobsRepository, configRepository *repositories.ConfigRepository) *handler {
 	return &handler{
-		db:         db,
-		gradeState: state.NewGradingLock(),
+		jobsRepository:   jobsRepository,
+		configRepository: configRepository,
+		gradeState:       state.NewGradingLock(),
 	}
 }

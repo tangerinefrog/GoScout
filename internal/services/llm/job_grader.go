@@ -7,13 +7,9 @@ import (
 	"fmt"
 	"os"
 	"strings"
-
-	"github.com/tangerinefrog/GoScout/internal/data"
 )
 
-type JobGrader struct {
-	db *data.DB
-}
+type JobGrader struct{}
 
 type GradeResult struct {
 	Grade     int    `json:"score"`
@@ -22,10 +18,8 @@ type GradeResult struct {
 
 const sysPromptPath = "./internal/services/llm/system_prompt"
 
-func NewJobGrader(db *data.DB) *JobGrader {
-	return &JobGrader{
-		db: db,
-	}
+func NewJobGrader() *JobGrader {
+	return &JobGrader{}
 }
 
 func (jg *JobGrader) Grade(ctx context.Context, candidateProfile string, jobDescr string) (GradeResult, error) {

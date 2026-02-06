@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/tangerinefrog/GoScout/internal/data/models"
-	"github.com/tangerinefrog/GoScout/internal/data/repositories"
 
 	"github.com/gin-gonic/gin"
 )
@@ -40,8 +39,7 @@ func (h *handler) jobHandler(c *gin.Context) {
 		return
 	}
 
-	jobsRepo := repositories.NewJobsRepo(h.db)
-	job, err := jobsRepo.GetByID(c.Request.Context(), jobId)
+	job, err := h.jobsRepository.GetByID(c.Request.Context(), jobId)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -107,8 +105,7 @@ func (h *handler) jobsHandler(c *gin.Context) {
 		searchFilter = &searchParam
 	}
 
-	jobsRepo := repositories.NewJobsRepo(h.db)
-	jobs, err := jobsRepo.List(c.Request.Context(), statusFilter, companyFilter, gradeFilter, dateFilter, searchFilter)
+	jobs, err := h.jobsRepository.List(c.Request.Context(), statusFilter, companyFilter, gradeFilter, dateFilter, searchFilter)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -145,9 +142,7 @@ func (h *handler) jobUpdateHandler(c *gin.Context) {
 		return
 	}
 
-	jobsRepo := repositories.NewJobsRepo(h.db)
-
-	job, err := jobsRepo.GetByID(c.Request.Context(), jobId)
+	job, err := h.jobsRepository.GetByID(c.Request.Context(), jobId)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -174,7 +169,7 @@ func (h *handler) jobUpdateHandler(c *gin.Context) {
 		job.Note = *req.Note
 	}
 
-	err = jobsRepo.Update(c.Request.Context(), job)
+	err = h.jobsRepository.Update(c.Request.Context(), job)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -204,9 +199,7 @@ func (h *handler) jobArchiveHandler(c *gin.Context) {
 		return
 	}
 
-	jobsRepo := repositories.NewJobsRepo(h.db)
-
-	job, err := jobsRepo.GetByID(c.Request.Context(), jobId)
+	job, err := h.jobsRepository.GetByID(c.Request.Context(), jobId)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -217,7 +210,7 @@ func (h *handler) jobArchiveHandler(c *gin.Context) {
 		return
 	}
 
-	err = jobsRepo.Archive(c.Request.Context(), job.Id)
+	err = h.jobsRepository.Archive(c.Request.Context(), job.Id)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

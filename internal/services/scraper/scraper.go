@@ -11,7 +11,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/tangerinefrog/GoScout/internal/data"
 	"github.com/tangerinefrog/GoScout/internal/data/models"
 	"github.com/tangerinefrog/GoScout/internal/data/repositories"
 	"github.com/tangerinefrog/GoScout/internal/services/fetcher"
@@ -22,12 +21,12 @@ import (
 const linkedInBaseUrl string = "https://www.linkedin.com/jobs-guest/jobs/api"
 
 type Scraper struct {
-	db *data.DB
+	jobsRepository *repositories.JobsRepository
 }
 
-func NewScraper(db *data.DB) *Scraper {
+func NewScraper(jobsRepository *repositories.JobsRepository) *Scraper {
 	return &Scraper{
-		db: db,
+		jobsRepository: jobsRepository,
 	}
 }
 
@@ -38,7 +37,6 @@ func (s *Scraper) ScrapeLinkedInJobs(ctx context.Context, keyword string, filter
 	if err != nil {
 		return err
 	}
-
 
 	jobsCh := make(chan string)
 	go func() {
@@ -53,11 +51,10 @@ func (s *Scraper) ScrapeLinkedInJobs(ctx context.Context, keyword string, filter
 		close(jobsCh)
 	}()
 
-	jRepo := repositories.NewJobsRepo(s.db)
-	jobFilter := filter.NewJobFilter(jRepo, filterKeywords)
+	jobFilter := filter.NewJobFilter(s.jobsRepository, filterKeywords)
 	numWorkers := 3
 
-	workerPool(ctx, jobsCh, numWorkers, jRepo, *jobFilter)
+	workerPool(ctx, jobsCh, numWorkers, s.jobsRepository, *jobFilter)
 
 	return nil
 }

@@ -10,7 +10,7 @@ import (
 )
 
 func (h *handler) exportHandler(c *gin.Context) {
-	exporter := exporter.NewExcelExporter(h.db)
+	exporter := exporter.NewExcelExporter(h.jobsRepository)
 
 	filename, err := exporter.ExportToExcel(c.Request.Context())
 	if err != nil {
