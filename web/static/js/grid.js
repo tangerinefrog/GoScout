@@ -10,6 +10,7 @@ async function renderGrid() {
         paginationPageSize: 50,
         paginationPageSizeSelector: [50, 100, 200],
         enableCellTextSelection: true,
+        suppressScrollOnNewData: true,
         columnDefs: defineColumns(),
         theme: theme,
     };
